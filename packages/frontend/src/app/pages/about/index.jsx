@@ -1,9 +1,15 @@
 import React from "react";
+
+import Container from "@material-ui/core/Container";
 import { makeStyles } from "@material-ui/core/styles";
 
 export function About() {
   const classes = useStyles();
-  return <div className={classes.root}>About</div>;
+  return (
+    <Container maxWidth="lg" className={classes.root}>
+      About
+    </Container>
+  );
 }
 const useStyles = makeStyles((theme) => ({
   root: {
