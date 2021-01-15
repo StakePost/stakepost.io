@@ -1,7 +1,8 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
+import { useWeb3React } from "@web3-react/core";
 
-import { makeStyles, withStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Link from "@material-ui/core/Link";
 import AppBar from "@material-ui/core/AppBar";
@@ -13,11 +14,13 @@ import TelegramIcon from "@material-ui/icons/Telegram";
 import GithubIcon from "@material-ui/icons/GitHub";
 
 import { UnlockButton } from "../unlockButton";
+import { UserProfile } from "../userProfile";
 
 const LinkBehavior = React.forwardRef((props, ref) => (
   <RouterLink ref={ref} {...props} />
 ));
 export function Header() {
+  const { active } = useWeb3React();
   const classes = useStyles();
   return (
     <Container maxWidth="lg">
@@ -37,7 +40,8 @@ export function Header() {
               <GithubIcon />
             </IconButton>
           </Box>
-          <UnlockButton />
+          {!active && <UnlockButton />}
+          {active && <UserProfile />}
         </Toolbar>
       </AppBar>
     </Container>
