@@ -10,9 +10,12 @@ export class User {
   address: string;
 
   @Prop({ required: true, unique: true, default: uuidv4 })
-  uuid: string;
+  nonce: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop()
+  token: string;
+
+  @Prop()
   refreshToken: string;
 }
 
