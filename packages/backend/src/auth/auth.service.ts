@@ -8,19 +8,17 @@ import { ethers } from 'ethers';
 import { User } from 'src/users/schemas';
 import { UsersService } from 'src/users/users.service';
 import { toChecksum } from 'src/utils';
-import { CredentialsDto } from './dto';
-import { JwtService } from '@nestjs/jwt';
+import { SigninRequestsDto } from './dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
-    private jwtService: JwtService,
   ) {}
 
-  async verifyCredentials(credentials: CredentialsDto): Promise<User> {
-    const address = toChecksum(credentials.address);
+  async verifyCredentials(request: SigninRequestsDto): Promise<User> {
+    const address = toChecksum(request.address);
 
     const foundUser = await this.usersService.findByAddress(address);
 
@@ -33,19 +31,12 @@ export class AuthService {
     }`;
 
     const recoveredAddress = toChecksum(
-      ethers.utils.verifyMessage(msg, credentials.signature),
+      ethers.utils.verifyMessage(msg, request.signature),
     );
     if (address !== recoveredAddress) {
       throw new UnauthorizedException('Invalid signature.');
     }
 
     return foundUser;
-  }
-
-  async login(user: any) {
-    const payload = { username: user.address, sub: user.address };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
   }
 }

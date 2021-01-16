@@ -10,7 +10,7 @@ import { toChecksum } from 'src/utils';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async findByToken(token: string): Promise<User> {
+  async findByAccessToken(token: string): Promise<User> {
     const user = await this.userModel.findOne({ token: token }).exec();
 
     if (!user) {
