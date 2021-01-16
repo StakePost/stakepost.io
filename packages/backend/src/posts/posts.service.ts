@@ -26,7 +26,7 @@ export class PostsService {
     limit = limit || 10;
     offset = offset || 0;
     console.log('Limit', limit);
-    const count = await this.postModel.count();
+    const count = await this.postModel.estimatedDocumentCount();
     const posts = await this.postModel
       .find()
       .skip(Number(offset))

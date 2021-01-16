@@ -18,6 +18,7 @@ import { UsersModule } from './users/users.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get('MONGO_URI'),
+        useCreateIndex: true,
         useNewUrlParser: true,
         useUnifiedTopology: true,
       }),
