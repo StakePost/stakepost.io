@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas';
@@ -62,13 +66,20 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const existingUser = await this.userModel
+      .findOne({ address: toChecksum(createUserDto.address) })
+      .exec();
+
+    if (existingUser) {
+      throw new ConflictException(`User #${createUserDto.address} exists`);
+    }
     createUserDto.address = toChecksum(createUserDto.address);
     const createdUser = new this.userModel(createUserDto);
     return createdUser.save();
   }
 
   async update(address: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const existingUser = await this.userModel.findByIdAndUpdate(
+    const existingUser = await this.userModel.findOneAndUpdate(
       { address: toChecksum(address) },
       updateUserDto,
     );
@@ -80,8 +91,24 @@ export class UsersService {
     return existingUser;
   }
 
+  async updateAfterLogin(address: string, refreshToken: string): Promise<User> {
+    const existingUser = await this.userModel.findOneAndUpdate(
+      { address: toChecksum(address) },
+      {
+        refreshToken: refreshToken,
+        //nonce: uuidv4(),
+      },
+    );
+
+    if (!existingUser) {
+      throw new NotFoundException(`User #${address} not found`);
+    }
+
+    return existingUser;
+  }
+
   async remove(address: string): Promise<any> {
-    const deletedUser = await this.userModel.findByIdAndRemove({
+    const deletedUser = await this.userModel.findOneAndDelete({
       address: toChecksum(address),
     });
     return deletedUser;

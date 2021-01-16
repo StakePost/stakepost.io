@@ -13,9 +13,6 @@ export class User {
   nonce: string;
 
   @Prop()
-  token: string;
-
-  @Prop()
   refreshToken: string;
 }
 

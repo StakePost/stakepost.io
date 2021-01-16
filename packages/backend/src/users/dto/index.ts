@@ -14,11 +14,6 @@ export class CreateUserDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  readonly token: string;
-
-  @IsOptional()
-  @IsNotEmpty()
-  @IsString()
   readonly refreshToken: string;
 }
 

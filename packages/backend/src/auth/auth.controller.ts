@@ -10,6 +10,7 @@ import {
 import { CreateUserDto } from 'src/users/dto';
 import { User } from 'src/users/schemas';
 import { UsersService } from 'src/users/users.service';
+import { toChecksum } from 'src/utils';
 import { AuthService } from './auth.service';
 import {
   AuthenticationPayload,
@@ -28,23 +29,17 @@ export class AuthController {
   ) {}
 
   @Post('signup')
-  async signup(@Body() createUserDto: CreateUserDto): Promise<any> {
-    const user = await this.usersService.create(createUserDto);
-    const token = await this.tokenService.generateAccessToken(user);
-    const refresh = await this.tokenService.generateRefreshToken(user);
-
-    const payload = this.buildResponsePayload(user, token, refresh);
-    return {
-      status: 'success',
-      data: payload,
-    };
+  async signup(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
   }
 
   @Post('signin')
-  async signin(@Body() credentials: SigninRequestsDto): Promise<any> {
+  async signin(@Body() credentials: SigninRequestsDto) {
     const user = await this.authService.verifyCredentials(credentials);
     const token = await this.tokenService.generateAccessToken(user);
     const refresh = await this.tokenService.generateRefreshToken(user);
+
+    await this.usersService.updateAfterLogin(user.address, refresh);
 
     const payload = this.buildResponsePayload(user, token, refresh);
     return {
@@ -62,6 +57,8 @@ export class AuthController {
       body.refresh_token,
     );
 
+    //await this.usersService.updateAfterLogin(user.address, token);
+
     const payload = this.buildResponsePayload(user, token);
 
     return {
@@ -71,8 +68,11 @@ export class AuthController {
   }
 
   @Get('nonce/:address')
-  async nonce(@Param('address') address: string): Promise<string> {
-    return this.usersService.findNonceByAddress(address);
+  async nonce(@Param('address') address: string) {
+    const nonce = await this.usersService.findNonceByAddress(
+      toChecksum(address),
+    );
+    return { address, nonce };
   }
 
   @UseGuards(JwtAuthGuard)

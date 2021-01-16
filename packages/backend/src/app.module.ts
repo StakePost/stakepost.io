@@ -21,6 +21,7 @@ import { UsersModule } from './users/users.module';
         useCreateIndex: true,
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        useFindAndModify: false,
       }),
       inject: [ConfigService],
     }),

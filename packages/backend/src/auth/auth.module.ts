@@ -4,12 +4,13 @@ import { JwtModule } from '@nestjs/jwt';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UsersService } from 'src/users/users.service';
 import { JwtStrategy } from './jwt.strategy';
 import { TokensService } from './token.service';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
+    UsersModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -21,7 +22,7 @@ import { TokensService } from './token.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, UsersService, JwtStrategy, TokensService],
+  providers: [AuthService, JwtStrategy, TokensService],
   controllers: [AuthController],
 })
 export class AuthModule {}
