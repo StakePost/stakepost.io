@@ -1,24 +1,25 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsOptional, IsPositive, IsNumber } from 'class-validator';
-import { MaxLength, IsNotEmpty, IsEmail, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { User } from 'src/users/schemas';
 import { Post } from '../schemas';
 
 export class CreatePostDto {
-  @IsString()
-  @IsNotEmpty()
-  readonly user: string;
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   readonly hash: string;
-  @IsNumber()
-  @IsNotEmpty()
-  readonly stake: number;
-  @IsNumber()
-  @IsNotEmpty()
-  readonly time: Date;
+
   @IsString()
   @IsNotEmpty()
   readonly content: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  readonly stake: number;
+
+  @IsOptional()
+  author: User;
 }
 
 export class UpdatePostDto extends PartialType(CreatePostDto) {}

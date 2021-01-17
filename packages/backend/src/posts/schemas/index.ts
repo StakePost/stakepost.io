@@ -1,24 +1,22 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
+import { User } from 'src/users/schemas';
 
-export type PostDocument = Post & Document;
+export type PostDocument = Post & mongoose.Document;
 
 @Schema({ timestamps: true })
 export class Post {
   @Prop({ required: true })
-  user: string;
+  hash: string;
 
   @Prop({ required: true })
-  hash: string;
+  content: string;
 
   @Prop({ required: true })
   stake: number;
 
-  @Prop({ required: true })
-  time: Date;
-
-  @Prop({ required: true })
-  content: string;
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Author' })
+  author: User;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

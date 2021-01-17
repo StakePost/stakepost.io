@@ -14,16 +14,6 @@ import { toChecksum } from 'src/utils';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async findByAccessToken(token: string): Promise<User> {
-    const user = await this.userModel.findOne({ token: token }).exec();
-
-    if (!user) {
-      throw new NotFoundException(`User not found`);
-    }
-
-    return Promise.resolve(user);
-  }
-
   async findByRefreshToken(refreshToken: string): Promise<User> {
     const user = await this.userModel
       .findOne({ refreshToken: refreshToken })
