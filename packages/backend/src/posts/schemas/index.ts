@@ -6,7 +6,7 @@ export type PostDocument = Post & mongoose.Document;
 
 @Schema({ timestamps: true })
 export class Post {
-  @Prop({ required: true })
+  @Prop()
   hash: string;
 
   @Prop({ required: true })
@@ -17,6 +17,9 @@ export class Post {
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Author' })
   author: User;
+
+  @Prop()
+  pinned: boolean;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

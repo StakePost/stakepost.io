@@ -6,7 +6,7 @@ export class CronService {
   private readonly logger = new Logger(CronService.name);
 
   @Cron(CronExpression.EVERY_MINUTE)
-  publishPost() {
+  async publishPost() {
     this.logger.debug('Called every minute');
   }
 }
