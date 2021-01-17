@@ -30,6 +30,7 @@
     "@nestjs/platform-express": "^7.5.1",
     "@nestjs/schedule": "^0.4.1",
     "@nestjs/swagger": "^4.7.11",
+    "@pinata/sdk": "^1.1.11",
     "class-validator": "^0.13.1",
     "ethers": "^5.0.26",
     "mongoose": "^5.11.12",

@@ -7,6 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CronModule } from './cron/cron.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { Web3Module } from './web3/web3.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { UsersModule } from './users/users.module';
     ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
+    Web3Module,
   ],
 })
 export class AppModule {}
