@@ -26,8 +26,7 @@ export class PostsController {
   @Post()
   async create(@Request() req, @Body() createPostDto: CreatePostDto) {
     const loggedUser = await this.usersService.findByAddress(req.user.address);
-    createPostDto.author = loggedUser;
-    return this.postsService.create(createPostDto);
+    return this.postsService.create(createPostDto, loggedUser);
   }
 
   @Get()

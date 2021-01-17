@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/users/schemas';
+import { PinataService } from 'src/web3/pinata.service';
+import { PinataResponse } from 'src/web3/types';
 import {
   CreatePostDto,
   PaginatedPostsResultDto,
@@ -12,12 +14,10 @@ import { Post, PostDocument } from './schemas';
 
 @Injectable()
 export class PostsService {
-  constructor(@InjectModel(Post.name) private postModel: Model<PostDocument>) {}
-
-  async create(createPostDto: CreatePostDto): Promise<Post> {
-    const createdPost = new this.postModel(createPostDto);
-    return createdPost.save();
-  }
+  constructor(
+    private readonly pinataService: PinataService,
+    @InjectModel(Post.name) private postModel: Model<PostDocument>,
+  ) {}
 
   async findAll(
     paginationQuery: PaginationQueryDto,
@@ -79,22 +79,50 @@ export class PostsService {
     return post;
   }
 
+  async create(createPostDto: CreatePostDto, user: User): Promise<Post> {
+    const createdPost = new this.postModel(createPostDto);
+    createdPost.author = user;
+
+    const pinataResponse: PinataResponse = await this.pinataService.pin(
+      createPostDto,
+      user.address,
+    );
+    createdPost.hash = pinataResponse.IpfsHash;
+    return createdPost.save();
+  }
+
   async update(
     id: string,
     updatePostDto: UpdatePostDto,
     user: User,
   ): Promise<Post> {
-    const existingPost = await this.postModel.findOneAndUpdate(
-      {
+    const existingPost = await this.postModel
+      .findOne({
         _id: id,
         author: user,
-      },
-      updatePostDto,
-    );
+      })
+      .populate('author', 'address', User.name);
 
     if (!existingPost) {
       throw new NotFoundException(`Post #${id} not found`);
     }
+
+    if (
+      existingPost.content !== updatePostDto.content ||
+      existingPost.author.address !== user.address ||
+      existingPost.stake !== updatePostDto.stake
+    ) {
+      await this.pinataService.unpin(existingPost.hash);
+      const pinataResponse: PinataResponse = await this.pinataService.pin(
+        updatePostDto,
+        user.address,
+      );
+      existingPost.hash = pinataResponse.IpfsHash;
+      existingPost.content = updatePostDto.content;
+      existingPost.stake = updatePostDto.stake;
+    }
+
+    existingPost.save();
 
     return existingPost;
   }
@@ -104,9 +132,13 @@ export class PostsService {
       _id: id,
       author: user,
     });
+
     if (!deletedPost) {
       throw new NotFoundException(`Post #${id} not found`);
     }
+
+    await this.pinataService.unpin(deletedPost.hash);
+
     return deletedPost;
   }
 }

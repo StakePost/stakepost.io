@@ -1,6 +1,7 @@
 import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
+import { CreatePostDto, UpdatePostDto } from 'src/posts/dto';
 import { Post } from 'src/posts/schemas';
 import { PinataResponse } from './types';
 
@@ -20,17 +21,20 @@ export class PinataService {
     this.secret = configService.get('PINATA_SECRET');
   }
 
-  async pin(post: Post): Promise<PinataResponse> {
+  async pin(
+    post: CreatePostDto | UpdatePostDto,
+    address: string,
+  ): Promise<PinataResponse> {
     const endpoint = `${this.baseUrl}/pinning/pinJSONToIPFS`;
     const now = Date.now();
 
     const payload = {
       pinataMetadata: {
-        name: `Stakepost message from ${post.author.address} at ${now}`,
+        name: `Stakepost message from ${address} at ${now}`,
       },
       pinataContent: {
         message: post.content,
-        author: post.author.address,
+        author: address,
         stake: post.stake,
       },
     };
@@ -48,8 +52,8 @@ export class PinataService {
     return Promise.resolve(response.data);
   }
 
-  async unpin(post: Post): Promise<PinataResponse> {
-    const endpoint = `${this.baseUrl}/pinning/unpin/${post.hash}`;
+  async unpin(hash: string): Promise<PinataResponse> {
+    const endpoint = `${this.baseUrl}/pinning/unpin/${hash}`;
 
     const options = {
       headers: {
