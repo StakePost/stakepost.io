@@ -12,4 +12,13 @@ const truncateAddress = (address, firstSegLength = 5, lastSegLength = 4) => {
     : "...";
 };
 
-export { isBrowser, truncateAddress };
+const IPFSHashPrefix = "0x1220";
+
+const delIPFSPrefix = (hash) => {
+  return "0x" + hash.replace(IPFSHashPrefix, "");
+};
+const addIPFSPrefix = (hash) => {
+  return IPFSHashPrefix + hash.replace("0x", "");
+};
+
+export { isBrowser, truncateAddress, delIPFSPrefix, addIPFSPrefix };

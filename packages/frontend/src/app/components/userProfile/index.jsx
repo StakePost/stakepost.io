@@ -1,20 +1,78 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useWeb3React } from "@web3-react/core";
 import makeBlockie from "ethereum-blockies-base64";
-import { formatEther } from "@ethersproject/units";
+import { ethers } from "ethers";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import ClickAwayListener from "@material-ui/core/ClickAwayListener";
+import Grow from "@material-ui/core/Grow";
+import Paper from "@material-ui/core/Paper";
+import Popper from "@material-ui/core/Popper";
+import MenuItem from "@material-ui/core/MenuItem";
+import MenuList from "@material-ui/core/MenuList";
 import Avatar from "@material-ui/core/Avatar";
 import Divider from "@material-ui/core/Divider";
-import { truncateAddress } from "../../../utils";
+import { truncateAddress, addIPFSPrefix, delIPFSPrefix } from "../../../utils";
+import config from "../../config";
+import { DateTime } from "luxon";
+import { isInteger } from "formik";
 
 export function UserProfile() {
   const { library, account, chainId, deactivate } = useWeb3React();
   const classes = useStyles();
   const [balance, setBalance] = useState(0);
   const [accountImage, setAccountImage] = useState("");
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef(null);
 
+  const [post, setPost] = useState(null);
+
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
+  };
+  const handleClose = (event) => {
+    if (anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const exitPost = async () => {
+    console.log(post);
+    try {
+      const contract = new ethers.Contract(
+        config.StakepostContractAt,
+        config.StakepostContractAbi,
+        library.getSigner(account)
+      );
+      await contract.exit();
+    } catch (e) {
+      //console.log(e);
+    }
+  };
+
+  const stakePost = async () => {
+    try {
+      const contract = new ethers.Contract(
+        config.StakepostContractAt,
+        config.StakepostContractAbi,
+        library.getSigner(account)
+      );
+      const hash = "QmWmyoMoctfbAaiEs2G46gpeUmhqFRDW6KWo64y5r581Vz";
+      const encoded = ethers.utils.hexlify(ethers.utils.base58.decode(hash));
+      const postHash = delIPFSPrefix(encoded);
+      //console.log();
+      await contract.stakeAndPost(postHash, {
+        value: ethers.utils.parseEther("1.0"),
+      });
+    } catch (e) {
+      //console.log(e);
+    }
+  };
   useEffect(() => {
     setAccountImage(makeBlockie(account));
   }, [account, accountImage]);
@@ -43,17 +101,113 @@ export function UserProfile() {
     }
   }, [account, library, chainId]);
 
+  useEffect(() => {
+    async function fetchData() {
+      if (!!account && !!library) {
+        let stale = false;
+
+        const contract = new ethers.Contract(
+          config.StakepostContractAt,
+          config.StakepostContractAbi,
+          library
+        );
+
+        try {
+          const postId = await contract.getStakepostIndexByUser(account);
+          if (postId.gte(0)) {
+            const post = await contract.posts(postId);
+            if (post && !stale) {
+              const hash = ethers.utils.base58.encode(addIPFSPrefix(post.post));
+              const p = {
+                hash: hash,
+                user: post.user,
+                stake: ethers.utils.formatEther(post.stake),
+                time: new Date(post.time.toNumber() * 1000),
+              };
+              setPost(p);
+            }
+          }
+        } catch (e) {
+          if (!stale) {
+            setPost(null);
+          }
+        }
+
+        return () => {
+          stale = true;
+          setPost(undefined);
+        };
+      }
+    }
+    fetchData();
+  }, [account, library, chainId]);
+
   return (
-    <Button disableFocusRipple disableRipple onClick={deactivate}>
-      <Grid container alignItems="center" className={classes.root}>
-        <div className={classes.balance}>
-          {balance ? formatEther(balance).substr(0, 4) : "..."} ETH
-        </div>
-        <Divider orientation="vertical" flexItem />
-        <div className={classes.account}>{truncateAddress(account)}</div>
-        <Avatar className={classes.avatar} src={accountImage} />
-      </Grid>
-    </Button>
+    <Grid container alignItems="center" className={classes.root}>
+      <ButtonGroup
+        variant="contained"
+        color="primary"
+        ref={anchorRef}
+        aria-label="split button"
+      >
+        <Button disableFocusRipple disableRipple onClick={deactivate}>
+          <div className={classes.balance}>
+            {balance ? ethers.utils.formatEther(balance).substr(0, 4) : "..."}{" "}
+            ETH
+          </div>
+          <Divider orientation="vertical" flexItem />
+          <div className={classes.account}>{truncateAddress(account)}</div>
+          <Avatar className={classes.avatar} src={accountImage} />
+        </Button>
+        <Button
+          color="primary"
+          size="small"
+          aria-controls={open ? "split-button-menu" : undefined}
+          aria-expanded={open ? "true" : undefined}
+          aria-label="select merge strategy"
+          aria-haspopup="menu"
+          onClick={handleToggle}
+        >
+          <ArrowDropDownIcon />
+        </Button>
+      </ButtonGroup>
+      <Popper
+        open={open}
+        anchorEl={anchorRef.current}
+        role={undefined}
+        transition
+        disablePortal
+      >
+        {({ TransitionProps, placement }) => (
+          <Grow
+            {...TransitionProps}
+            style={{
+              transformOrigin:
+                placement === "bottom" ? "center top" : "center bottom",
+            }}
+          >
+            <Paper>
+              <ClickAwayListener onClickAway={handleClose}>
+                <MenuList id="split-button-menu">
+                  {post && (
+                    <MenuItem key="post" onClick={exitPost}>
+                      {truncateAddress(post.hash)} | {post.stake} ETH |{" "}
+                      {DateTime.fromJSDate(post.time).toRelative()}
+                    </MenuItem>
+                  )}
+                  <MenuItem key="stakepost" onClick={stakePost}>
+                    Stakepost
+                  </MenuItem>
+                  <MenuItem key="deactivate" onClick={deactivate}>
+                    Deactivate
+                  </MenuItem>
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
+    </Grid>
   );
 }
 

@@ -1,4 +1,7 @@
 import React from "react";
+import { DateTime } from "luxon";
+import config from "../../config";
+
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -9,9 +12,8 @@ import StarIcon from "@material-ui/icons/Star";
 import TwitterIcon from "@material-ui/icons/Twitter";
 import ShareIcon from "@material-ui/icons/Share";
 
-export function MessageCard(props) {
-  const { pinned } = props;
-  const classes = useStyles(props);
+export function MessageCard({ pinned, hash, stake, createdAt, children }) {
+  const classes = useStyles(pinned);
   return (
     <Card className={classes.root} raised elevation={2} square>
       <CardHeader
@@ -23,21 +25,22 @@ export function MessageCard(props) {
           )
         }
         disableTypography
-        title="10.0090220 ETH"
+        title={Number(stake).toFixed(2) + " ETH"}
         className={classes.header}
       />
-      <CardContent className={classes.content}>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit quos
-        excepturi asperiores nam ea quidem omnis vitae repudiandae voluptates
-        ipsam fugit cumque saepe, inventore sed consectetur quis porro eius
-        molestiae!
-      </CardContent>
+      <CardContent className={classes.content}>{children}</CardContent>
       <CardActions className={classes.actions}>
-        <div className={classes.datetime}>28 Dec 2020</div>
+        <div className={classes.datetime}>
+          {DateTime.fromISO(createdAt).toLocaleString(DateTime.DATETIME_MED)}
+        </div>
         <IconButton aria-label="Share Twitter" className={classes.actionIcon}>
           <TwitterIcon />
         </IconButton>
-        <IconButton aria-label="Share Link" className={classes.actionIcon}>
+        <IconButton
+          href={config.IPFSGatewayUri + hash}
+          aria-label="Share Link"
+          className={classes.actionIcon}
+        >
           <ShareIcon />
         </IconButton>
       </CardActions>
@@ -48,7 +51,7 @@ const useStyles = makeStyles({
   root: {
     minWidth: 275,
     borderRadius: "0.125rem",
-    marginBottom: (props) => (props.pinned ? "4rem" : "2rem"),
+    marginBottom: (pinned) => (pinned ? "4rem" : "2rem"),
   },
   header: {
     fontFamily: '"Inter", sans-serif',
