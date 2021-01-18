@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as moment from 'moment';
 import { Model } from 'mongoose';
 import { User } from 'src/users/schemas';
 import { PinataService } from 'src/web3/pinata.service';
@@ -26,7 +27,6 @@ export class PostsService {
 
     limit = limit || 10;
     offset = offset || 0;
-    console.log('Limit', limit);
     const count = await this.postModel.estimatedDocumentCount();
     const posts = await this.postModel
       .find()
@@ -40,6 +40,19 @@ export class PostsService {
       limit: limit,
       data: posts,
     };
+  }
+
+  async findAllForEpoch(): Promise<PostDocument[]> {
+    const fromTime = moment().startOf('hour').subtract(2, 'hours');
+    return this.postModel
+      .find({
+        createdAt: {
+          $gte: fromTime.toDate(),
+        },
+      })
+      .sort('-stake')
+      .populate('author', 'address', User.name)
+      .exec();
   }
 
   async findAllByUser(
@@ -140,5 +153,21 @@ export class PostsService {
     await this.pinataService.unpin(deletedPost.hash);
 
     return deletedPost;
+  }
+
+  async pin(id: string): Promise<any> {
+    const updated = await this.postModel.findByIdAndUpdate(id, {
+      pinned: true,
+    });
+
+    return updated;
+  }
+
+  async unpinAll(): Promise<any> {
+    const updated = await this.postModel
+      .updateMany({ pinned: true }, { pinned: false })
+      .exec();
+
+    return updated;
   }
 }

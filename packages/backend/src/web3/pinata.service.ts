@@ -9,6 +9,7 @@ import { PinataResponse } from './types';
 export class PinataService {
   private readonly logger = new Logger(PinataService.name);
   private baseUrl;
+  private gatewayEndpoint;
   private key;
   private secret;
 
@@ -16,7 +17,8 @@ export class PinataService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    this.baseUrl = configService.get('PINATA_GATEWAY_URI');
+    this.baseUrl = configService.get('PINATA_API_URI');
+    this.gatewayEndpoint = configService.get('PINATA_GATEWAY_ENDPOINT');
     this.key = configService.get('PINATA_KEY');
     this.secret = configService.get('PINATA_SECRET');
   }
@@ -33,7 +35,7 @@ export class PinataService {
         name: `Stakepost message from ${address} at ${now}`,
       },
       pinataContent: {
-        message: post.content,
+        content: post.content,
         author: address,
         stake: post.stake,
       },
@@ -65,6 +67,14 @@ export class PinataService {
     const response = await this.httpService
       .delete(endpoint, options)
       .toPromise();
+
+    return Promise.resolve(response.data);
+  }
+
+  async get(hash: string): Promise<any> {
+    const endpoint = `${this.gatewayEndpoint}/${hash}`;
+
+    const response = await this.httpService.get(endpoint).toPromise();
 
     return Promise.resolve(response.data);
   }

@@ -3,3 +3,10 @@ export class PinataResponse {
   PinSize: number;
   Timestamp: Date;
 }
+
+export class ContractPost {
+  user?: string;
+  stake?: number;
+  post?: string;
+  time?: Date;
+}

@@ -18,7 +18,7 @@ export class Post {
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Author' })
   author: User;
 
-  @Prop()
+  @Prop({ default: false })
   pinned: boolean;
 }
 
