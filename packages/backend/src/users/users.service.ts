@@ -1,7 +1,7 @@
 import {
-  ConflictException,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -32,7 +32,7 @@ export class UsersService {
       .exec();
 
     if (!user) {
-      throw new NotFoundException(`User #${address} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     return Promise.resolve(user);
@@ -44,7 +44,7 @@ export class UsersService {
       .exec();
 
     if (!user) {
-      throw new NotFoundException(`User #${address} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     if (!user.nonce) {
@@ -61,7 +61,7 @@ export class UsersService {
       .exec();
 
     if (existingUser) {
-      throw new ConflictException(`User #${createUserDto.address} exists`);
+      throw new UnprocessableEntityException(`User already exists`);
     }
     createUserDto.address = toChecksum(createUserDto.address);
     const createdUser = new this.userModel(createUserDto);
@@ -75,7 +75,7 @@ export class UsersService {
     );
 
     if (!existingUser) {
-      throw new NotFoundException(`User #${address} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     return existingUser;
@@ -91,7 +91,7 @@ export class UsersService {
     );
 
     if (!existingUser) {
-      throw new NotFoundException(`User #${address} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     return existingUser;
