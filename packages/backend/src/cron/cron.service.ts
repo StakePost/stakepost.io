@@ -15,7 +15,7 @@ export class CronService {
     private readonly postsService: PostsService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  //@Cron(CronExpression.EVERY_MINUTE)
   async publishPost() {
     this.logger.debug('#publishPost');
 
