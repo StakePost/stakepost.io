@@ -32,6 +32,7 @@ export class PostsService {
       .find()
       .skip(Number(offset))
       .limit(Number(limit))
+      .sort({ createdAt: -1, pinned: -1 })
       .populate('author', 'address', User.name)
       .exec();
     return {
@@ -69,6 +70,7 @@ export class PostsService {
       .find({ author: user })
       .skip(Number(offset))
       .limit(Number(limit))
+      .sort('-pinned')
       .populate('author', 'address', User.name)
       .exec();
     return {
