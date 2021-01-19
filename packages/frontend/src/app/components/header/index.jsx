@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { useWeb3React } from "@web3-react/core";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
@@ -16,12 +16,15 @@ import GithubIcon from "@material-ui/icons/GitHub";
 import { UnlockButton } from "../unlockButton";
 import { UserProfile } from "../userProfile";
 
+import { ethSelector } from "../../store/slices/eth";
+
 const LinkBehavior = React.forwardRef((props, ref) => (
   <RouterLink ref={ref} {...props} />
 ));
 export function Header() {
-  const { active } = useWeb3React();
   const classes = useStyles();
+  const { account } = useSelector(ethSelector);
+
   return (
     <Container maxWidth="lg">
       <AppBar position="static" color="transparent" elevation={0}>
@@ -40,8 +43,8 @@ export function Header() {
               <GithubIcon />
             </IconButton>
           </Box>
-          {!active && <UnlockButton />}
-          {active && <UserProfile />}
+          {!account && <UnlockButton />}
+          {account && <UserProfile />}
         </Toolbar>
       </AppBar>
     </Container>

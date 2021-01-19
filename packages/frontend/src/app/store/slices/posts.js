@@ -1,13 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-import config from "../../config";
+import { postService } from "../../api/posts";
 
 export const initialState = {
   loading: false,
   error: false,
   count: 0,
   offset: 0,
-  limit: 10,
+  limit: 3,
   entities: [],
 };
 
@@ -41,18 +40,12 @@ export const {
 
 export const postsSelector = (state) => state.posts;
 
-export function fetchPosts() {
+export function fetchPosts(offset, limit) {
   return async (dispatch) => {
     dispatch(getPosts());
 
     try {
-      const response = await fetch(`${config.BackendBaseUri}/posts`);
-
-      if (!response.ok) {
-        throw new Error(`An error has occured: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await postService.list(offset, limit);
 
       dispatch(getPostsSuccess(data));
     } catch (error) {

@@ -1,6 +1,8 @@
 const config = {
   BackendBaseUri: "http://localhost:5000",
   IPFSGatewayUri: "https://gateway.pinata.cloud/ipfs/",
+  SignatureTemplate:
+    "Hi there from StakePost.io! Sign this message to prove you have access to this wallet and we'll log you in. This won't cost you any Ether. To stop hackers using your wallet, here's a unique message ID they can't guess:",
   StakepostContractAt: "0x98B815abd0e8adE20A8B5c9264530213d860f05d",
   StakepostContractAbi: [
     {

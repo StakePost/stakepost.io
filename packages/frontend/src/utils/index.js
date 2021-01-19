@@ -21,4 +21,41 @@ const addIPFSPrefix = (hash) => {
   return IPFSHashPrefix + hash.replace("0x", "");
 };
 
-export { isBrowser, truncateAddress, delIPFSPrefix, addIPFSPrefix };
+const authHeader = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user && user.token) {
+    return { Authorization: "Bearer " + user.token };
+  } else {
+    return {};
+  }
+};
+
+const saveAuthToStore = ({ account, token, refreshToken }) => {
+  localStorage.setItem("account", account);
+  localStorage.setItem("token", token);
+  localStorage.setItem("refreshToken", refreshToken);
+};
+const getAuthFromStore = () => {
+  return {
+    storeAccount: localStorage.getItem("account"),
+    storeToken: localStorage.getItem("token"),
+    storeRefreshToken: localStorage.getItem("refreshToken"),
+  };
+};
+const removeAuthFromStore = () => {
+  localStorage.removeItem("account");
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+};
+
+export {
+  isBrowser,
+  truncateAddress,
+  delIPFSPrefix,
+  addIPFSPrefix,
+  authHeader,
+  saveAuthToStore,
+  getAuthFromStore,
+  removeAuthFromStore,
+};

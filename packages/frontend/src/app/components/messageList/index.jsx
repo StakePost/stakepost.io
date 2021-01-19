@@ -9,13 +9,15 @@ import { fetchPosts, postsSelector } from "../../store/slices/posts";
 
 export function MessageList() {
   const dispatch = useDispatch();
-  const { entities, loading, error } = useSelector(postsSelector);
+  const { entities, offset, limit, loading, error } = useSelector(
+    postsSelector
+  );
 
   const classes = useStyles();
 
   useEffect(() => {
-    dispatch(fetchPosts());
-  }, [dispatch]);
+    dispatch(fetchPosts(offset, limit));
+  }, [dispatch, offset, limit]);
 
   const renderPosts = () => {
     if (loading) return <CircularProgress />;

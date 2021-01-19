@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useWeb3React } from "@web3-react/core";
-import makeBlockie from "ethereum-blockies-base64";
 import { ethers } from "ethers";
+import { DateTime } from "luxon";
+
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
@@ -15,34 +17,48 @@ import MenuItem from "@material-ui/core/MenuItem";
 import MenuList from "@material-ui/core/MenuList";
 import Avatar from "@material-ui/core/Avatar";
 import Divider from "@material-ui/core/Divider";
-import { truncateAddress, addIPFSPrefix, delIPFSPrefix } from "../../../utils";
+
+import {
+  truncateAddress,
+  addIPFSPrefix,
+  delIPFSPrefix,
+  removeAuthFromStore,
+} from "../../../utils";
+import { ethSelector, deacivate } from "../../store/slices/eth";
+import { logout } from "../../store/slices/auth";
 import config from "../../config";
-import { DateTime } from "luxon";
-import { isInteger } from "formik";
 
 export function UserProfile() {
-  const { library, account, chainId, deactivate } = useWeb3React();
+  const dispatch = useDispatch();
+  const { account, image, balance } = useSelector(ethSelector);
+  const { library, chainId, deactivate } = useWeb3React();
+
   const classes = useStyles();
-  const [balance, setBalance] = useState(0);
-  const [accountImage, setAccountImage] = useState("");
+
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
 
   const [post, setPost] = useState(null);
 
+  const handleLogout = (event) => {
+    deactivate();
+    dispatch(deacivate());
+    dispatch(logout());
+    removeAuthFromStore();
+  };
+
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
+
   const handleClose = (event) => {
     if (anchorRef.current && anchorRef.current.contains(event.target)) {
       return;
     }
-
     setOpen(false);
   };
 
   const exitPost = async () => {
-    console.log(post);
     try {
       const contract = new ethers.Contract(
         config.StakepostContractAt,
@@ -73,33 +89,6 @@ export function UserProfile() {
       //console.log(e);
     }
   };
-  useEffect(() => {
-    setAccountImage(makeBlockie(account));
-  }, [account, accountImage]);
-
-  useEffect(() => {
-    if (!!account && !!library) {
-      let stale = false;
-
-      library
-        .getBalance(account)
-        .then((balance) => {
-          if (!stale) {
-            setBalance(balance);
-          }
-        })
-        .catch(() => {
-          if (!stale) {
-            setBalance(null);
-          }
-        });
-
-      return () => {
-        stale = true;
-        setBalance(undefined);
-      };
-    }
-  }, [account, library, chainId]);
 
   useEffect(() => {
     async function fetchData() {
@@ -151,13 +140,10 @@ export function UserProfile() {
         aria-label="split button"
       >
         <Button disableFocusRipple disableRipple onClick={deactivate}>
-          <div className={classes.balance}>
-            {balance ? ethers.utils.formatEther(balance).substr(0, 4) : "..."}{" "}
-            ETH
-          </div>
+          <div className={classes.balance}>{balance} ETH</div>
           <Divider orientation="vertical" flexItem />
           <div className={classes.account}>{truncateAddress(account)}</div>
-          <Avatar className={classes.avatar} src={accountImage} />
+          <Avatar className={classes.avatar} src={image} />
         </Button>
         <Button
           color="primary"
@@ -198,8 +184,8 @@ export function UserProfile() {
                   <MenuItem key="stakepost" onClick={stakePost}>
                     Stakepost
                   </MenuItem>
-                  <MenuItem key="deactivate" onClick={deactivate}>
-                    Deactivate
+                  <MenuItem key="deactivate" onClick={handleLogout}>
+                    Logout
                   </MenuItem>
                 </MenuList>
               </ClickAwayListener>
