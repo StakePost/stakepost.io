@@ -2,8 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 export const initialState = {
   show: false,
-  type: undefined,
-  message: undefined,
+  type: null,
+  message: null,
 };
 
 const alertSlice = createSlice({
@@ -27,8 +27,8 @@ const alertSlice = createSlice({
     },
     clear: (state) => {
       state.show = false;
-      state.type = undefined;
-      state.message = undefined;
+      state.type = null;
+      state.message = null;
     },
   },
 });
