@@ -5,6 +5,7 @@ import { userService } from "../../api/users";
 export const initialState = {
   loading: false,
   requestSignature: false,
+  refreshNeeded: true,
   authorized: false,
   error: null,
   nonce: null,
@@ -69,6 +70,22 @@ const authSlice = createSlice({
       state.error = payload;
       state.requestSignature = false;
     },
+    refreshNeeded: (state) => {
+      state.loading = true;
+      state.error = null;
+      state.refreshNeeded = true;
+    },
+    refreshSuccess: (state, { payload }) => {
+      state.loading = false;
+      state.error = null;
+      state.refreshNeeded = false;
+      state.token = payload.token;
+    },
+    refreshFailure: (state, { payload }) => {
+      state.loading = false;
+      state.error = payload;
+      state.refreshNeeded = false;
+    },
     logout: (state) => {
       state.loading = false;
       state.requestSignature = false;
@@ -93,6 +110,9 @@ export const {
   signatureRequest,
   signatureSuccess,
   signatureFailure,
+  refreshNeeded,
+  refreshSuccess,
+  refreshFailure,
   logout,
 } = authSlice.actions;
 
@@ -132,6 +152,25 @@ export function loginRequest(account, signature) {
     } catch (error) {
       const { code, message } = error;
       dispatch(loginFailure({ code, message }));
+    }
+  };
+}
+
+export function refreshRequest(refreshToken) {
+  return async (dispatch) => {
+    dispatch(setLoading());
+
+    try {
+      const response = await userService.refresh(refreshToken);
+
+      dispatch(
+        refreshSuccess({
+          token: response.data.payload.token,
+        })
+      );
+    } catch (error) {
+      const { code, message } = error;
+      dispatch(refreshFailure({ code, message }));
     }
   };
 }

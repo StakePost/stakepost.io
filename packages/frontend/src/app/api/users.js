@@ -60,6 +60,35 @@ const login = async (address, signature) => {
   }
 };
 
+const refresh = async (refreshToken) => {
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  };
+
+  try {
+    const response = await fetch(
+      `${config.BackendBaseUri}/auth/refresh`,
+      requestOptions
+    );
+
+    if (!response.ok) {
+      throw new ApiError(response.status, response.statusText);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return Promise.reject(error);
+    } else {
+      return Promise.reject(
+        new ApiError(ErrorCodes.UNSPECIFIED, error.message)
+      );
+    }
+  }
+};
+
 const nonce = async (address) => {
   const requestOptions = {
     method: "GET",
@@ -116,6 +145,7 @@ const me = async () => {
 export const userService = {
   register,
   login,
+  refresh,
   me,
   nonce,
 };
