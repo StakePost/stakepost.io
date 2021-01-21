@@ -6,8 +6,11 @@ export type PostDocument = Post & mongoose.Document;
 
 @Schema({ timestamps: true })
 export class Post {
-  @Prop()
+  @Prop({ required: true })
   hash: string;
+
+  @Prop({ required: true })
+  txHash: string;
 
   @Prop({ required: true })
   content: string;

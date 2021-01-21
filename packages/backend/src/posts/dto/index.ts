@@ -18,6 +18,10 @@ export class CreatePostDto {
   @IsNotEmpty()
   readonly stake: number;
 
+  @IsString()
+  @IsNotEmpty()
+  readonly txHash: string;
+
   @IsOptional()
   author: User;
 }
