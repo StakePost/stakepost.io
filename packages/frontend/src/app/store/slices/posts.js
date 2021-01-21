@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { postService } from "../../api/posts";
+import { postService } from "../../api";
 
 export const initialState = {
   loading: false,
@@ -40,7 +40,7 @@ export const {
 
 export const postsSelector = (state) => state.posts;
 
-export function fetchPosts(offset, limit) {
+export const fetchPosts = (offset, limit) => {
   return async (dispatch) => {
     dispatch(getPosts());
 
@@ -52,6 +52,6 @@ export function fetchPosts(offset, limit) {
       dispatch(getPostsFailure(error.message));
     }
   };
-}
+};
 
 export default postsSlice.reducer;

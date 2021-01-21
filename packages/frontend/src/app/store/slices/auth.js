@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ErrorCodes } from "../../api";
-import { userService } from "../../api/users";
+import { ErrorCodes, userService } from "../../api";
 
 export const initialState = {
   loading: false,

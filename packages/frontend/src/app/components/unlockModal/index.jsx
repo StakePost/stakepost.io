@@ -25,6 +25,7 @@ export function UnlockModal({ onClose, open }) {
       onClose={handleClose}
       open={open}
       title="Select wallet provider"
+      showActions={true}
     >
       <div className={classes.modalContent}>
         <ProviderCard

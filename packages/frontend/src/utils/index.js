@@ -22,10 +22,10 @@ const addIPFSPrefix = (hash) => {
 };
 
 const authHeader = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
-  if (user && user.token) {
-    return { Authorization: "Bearer " + user.token };
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
   } else {
     return {};
   }

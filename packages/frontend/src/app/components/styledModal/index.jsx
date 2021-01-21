@@ -57,7 +57,7 @@ const DialogActions = withStyles((theme) => ({
 }))(MuiDialogActions);
 
 export function StyledModal(props) {
-  const { open, onClose, title, children } = props;
+  const { open, onClose, title, children, showActions } = props;
   const { deactivate, active } = useWeb3React();
   const handleClose = () => {
     onClose();
@@ -75,16 +75,18 @@ export function StyledModal(props) {
         {title}
       </DialogTitle>
       <DialogContent dividers>{children}</DialogContent>
-      <DialogActions>
-        <Button
-          autoFocus
-          onClick={deactivate}
-          color="primary"
-          disabled={!active}
-        >
-          Disonnect
-        </Button>
-      </DialogActions>
+      {showActions && (
+        <DialogActions>
+          <Button
+            autoFocus
+            onClick={deactivate}
+            color="primary"
+            disabled={!active}
+          >
+            Disonnect
+          </Button>
+        </DialogActions>
+      )}
     </Dialog>
   );
 }

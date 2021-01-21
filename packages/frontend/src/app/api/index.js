@@ -1,4 +1,5 @@
-import { Class } from "@material-ui/icons";
+export * from "./users";
+export * from "./posts";
 
 export const ErrorCodes = {
   NOTFOUND: 404,
