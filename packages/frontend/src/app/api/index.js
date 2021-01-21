@@ -2,6 +2,7 @@ export * from "./users";
 export * from "./posts";
 
 export const ErrorCodes = {
+  Unauthorized: 401,
   NOTFOUND: 404,
   UNPROCESSABLE: 422,
   UNSPECIFIED: 0,

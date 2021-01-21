@@ -15,7 +15,7 @@ import ShareIcon from "@material-ui/icons/Share";
 export function MessageCard({ pinned, hash, stake, createdAt, children }) {
   const classes = useStyles(pinned);
   return (
-    <Card className={classes.root} raised elevation={2} square>
+    <Card className={classes.root} raised elevation={3} square>
       <CardHeader
         action={
           pinned && (

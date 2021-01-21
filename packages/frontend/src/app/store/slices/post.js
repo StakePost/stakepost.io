@@ -48,7 +48,8 @@ export const savePostRequest = ({ content, stake }, onSuccess) => {
       onSuccess();
       dispatch(appendPost(data));
     } catch (error) {
-      dispatch(savePostFailure(error));
+      const { code, message } = error;
+      dispatch(savePostFailure({ code, message }));
     }
   };
 };

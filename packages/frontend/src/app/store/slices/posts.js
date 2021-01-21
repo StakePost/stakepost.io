@@ -6,7 +6,7 @@ export const initialState = {
   error: false,
   count: 0,
   offset: 0,
-  limit: 3,
+  limit: 5,
   entities: [],
 };
 
@@ -22,7 +22,7 @@ const postsSlice = createSlice({
       state.count = payload.count;
       state.offset = payload.offset;
       state.limit = payload.limit;
-      state.entities = payload.data;
+      state.entities = [...state.entities, ...payload.data];
       state.loading = false;
       state.error = false;
     },
@@ -32,6 +32,7 @@ const postsSlice = createSlice({
     },
     appendPost: (state, { payload }) => {
       state.entities = [payload, ...state.entities];
+      state.count = state.count + 1;
       state.loading = false;
       state.error = false;
     },
@@ -59,7 +60,8 @@ export const fetchPosts = (
 
       dispatch(getPostsSuccess(data));
     } catch (error) {
-      dispatch(getPostsFailure(error.message));
+      const { code, message } = error;
+      dispatch(getPostsFailure({ code, message }));
     }
   };
 };

@@ -4,7 +4,7 @@ import { ErrorCodes, userService } from "../../api";
 export const initialState = {
   loading: false,
   requestSignature: false,
-  refreshNeeded: true,
+  refreshNeeded: false,
   authorized: false,
   error: null,
   nonce: null,
@@ -69,10 +69,10 @@ const authSlice = createSlice({
       state.error = payload;
       state.requestSignature = false;
     },
-    refreshNeeded: (state) => {
+    setRefreshNeeded: (state, { payload }) => {
       state.loading = true;
       state.error = null;
-      state.refreshNeeded = true;
+      state.refreshNeeded = payload;
     },
     refreshSuccess: (state, { payload }) => {
       state.loading = false;
@@ -109,7 +109,7 @@ export const {
   signatureRequest,
   signatureSuccess,
   signatureFailure,
-  refreshNeeded,
+  setRefreshNeeded,
   refreshSuccess,
   refreshFailure,
   logout,
