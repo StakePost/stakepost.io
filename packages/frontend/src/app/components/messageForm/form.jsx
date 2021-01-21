@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useWeb3React } from "@web3-react/core";
+import { ethers } from "ethers";
+import HashGenerator from "ipfs-only-hash";
 
 import { Formik, Form, Field } from "formik";
 import { TextField } from "formik-material-ui";
@@ -9,6 +12,7 @@ import Backdrop from "@material-ui/core/Backdrop";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { StyledButton } from "../styledButton";
+import { delIPFSPrefix } from "../../../utils";
 
 import {
   postSelector,
@@ -16,46 +20,74 @@ import {
   setLoading,
 } from "../../store/slices/post";
 
+import { ethSelector } from "../../store/slices/eth";
+
+import config from "../../config";
+
 export function MessageForm({ onClose }) {
   const dispatch = useDispatch();
+  const { library } = useWeb3React();
   const { loading } = useSelector(postSelector);
+  const { account, balance } = useSelector(ethSelector);
 
   const classes = useStyles();
 
   const initialValues = {
     content: "write a post",
-    stake: "enter amount",
+    stake: 1,
   };
   const validate = (values) => {
     const errors = {};
-    if (!values.content || !values.stake) {
+    if (!values.content) {
       errors.content = "Required";
     }
+    if (values.length > 250) {
+      errors.content = "Max symbols exceed";
+    }
+
+    if (!values.stake) {
+      errors.stake = "Required";
+    }
+    if (values.stake <= 0) {
+      errors.stake = "Stake should be positive";
+    }
+    if (values.stake > balance) {
+      errors.stake = "Stake should be less then balance";
+    }
+
     return errors;
   };
   const onSubmit = (values, { loading }) => {
-    // const body = {
-    //   content: values.content,
-    //   author: "0x0",
-    //   stake: `${values.stake}`,
-    //   datetime: new Date().getTime(),
-    // };
-    console.log(values);
-    dispatch(savePostRequest(values, onClose));
-    // const pinName = `Stakepost content from ${body.author} at ${body.datetime}`;
-    // pinata
-    //   .pinJSONToIPFS(body, { pinataMetadata: { name: pinName } })
-    //   .then((result) => {
-    //     //handle results here
-    //     console.log(result);
-    //     alert(JSON.stringify(result, null, 2));
-    //     setSubmitting(false);
-    //   })
-    //   .catch((err) => {
-    //     //handle error here
-    //     console.log(err);
-    //     setSubmitting(false);
-    //   });
+    stakePost(values.content, account, values.stake)
+      .then((result) => {
+        values.txHash = result.hash;
+        dispatch(savePostRequest(values, onClose));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const stakePost = async (content, author, stake) => {
+    try {
+      const contract = new ethers.Contract(
+        config.StakepostContractAt,
+        config.StakepostContractAbi,
+        library.getSigner(account)
+      );
+
+      const postContent = JSON.stringify({ content, author, stake });
+      const data = Buffer.from(postContent);
+      const hash = await HashGenerator.of(data);
+      const encoded = ethers.utils.hexlify(ethers.utils.base58.decode(hash));
+      const postHash = delIPFSPrefix(encoded);
+      const response = await contract.stakeAndPost(postHash, {
+        value: ethers.utils.parseEther(stake.toString()),
+      });
+      return response;
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
@@ -92,7 +124,7 @@ export function MessageForm({ onClose }) {
             <div className={classes.stake}>
               <Field
                 component={TextField}
-                type="text"
+                type="number"
                 label="stake"
                 name="stake"
                 fullWidth

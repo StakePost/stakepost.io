@@ -21,11 +21,11 @@ import Divider from "@material-ui/core/Divider";
 import {
   truncateAddress,
   addIPFSPrefix,
-  delIPFSPrefix,
   removeAuthFromStore,
 } from "../../../utils";
 import { ethSelector, deacivate } from "../../store/slices/eth";
 import { logout } from "../../store/slices/auth";
+import { showAlert } from "../../store/slices/alert";
 import config from "../../config";
 
 export function UserProfile() {
@@ -67,26 +67,12 @@ export function UserProfile() {
       );
       await contract.exit();
     } catch (e) {
-      //console.log(e);
-    }
-  };
+      const match = e.message.match(/\{.*\:\{.*\:.*\}\}/gi);
 
-  const stakePost = async () => {
-    try {
-      const contract = new ethers.Contract(
-        config.StakepostContractAt,
-        config.StakepostContractAbi,
-        library.getSigner(account)
-      );
-      const hash = "QmWmyoMoctfbAaiEs2G46gpeUmhqFRDW6KWo64y5r581Vz";
-      const encoded = ethers.utils.hexlify(ethers.utils.base58.decode(hash));
-      const postHash = delIPFSPrefix(encoded);
-      //console.log();
-      await contract.stakeAndPost(postHash, {
-        value: ethers.utils.parseEther("1.0"),
-      });
-    } catch (e) {
-      //console.log(e);
+      if (match) {
+        const error = JSON.parse(match[0]);
+        dispatch(showAlert(error.message));
+      }
     }
   };
 
@@ -136,10 +122,16 @@ export function UserProfile() {
       <ButtonGroup
         variant="contained"
         color="primary"
+        size="small"
         ref={anchorRef}
         aria-label="split button"
       >
-        <Button disableFocusRipple disableRipple onClick={deactivate}>
+        <Button
+          disableFocusRipple
+          disableRipple
+          size="small"
+          onClick={deactivate}
+        >
           <div className={classes.balance}>{balance} ETH</div>
           <Divider orientation="vertical" flexItem />
           <div className={classes.account}>{truncateAddress(account)}</div>
@@ -181,9 +173,6 @@ export function UserProfile() {
                       {DateTime.fromJSDate(post.time).toRelative()}
                     </MenuItem>
                   )}
-                  <MenuItem key="stakepost" onClick={stakePost}>
-                    Stakepost
-                  </MenuItem>
                   <MenuItem key="deactivate" onClick={handleLogout}>
                     Logout
                   </MenuItem>

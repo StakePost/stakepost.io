@@ -7,7 +7,12 @@ import makeBlockie from "ethereum-blockies-base64";
 
 import { ethers } from "ethers";
 
-import { makeStyles } from "@material-ui/core/styles";
+import {
+  createMuiTheme,
+  makeStyles,
+  ThemeProvider,
+} from "@material-ui/core/styles";
+
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Snackbar from "@material-ui/core/Snackbar";
 import IconButton from "@material-ui/core/IconButton";
@@ -35,10 +40,30 @@ import {
 
 import { postSelector } from "./store/slices/post";
 
-import { showAlert, clearAlert, alertSelector } from "./store/slices/alert";
+import { clearAlert, alertSelector } from "./store/slices/alert";
 
 import { getAuthFromStore, saveAuthToStore } from "../utils";
 import { ErrorCodes } from "./api";
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#141414",
+    },
+  },
+  typography: {
+    fontFamily: [
+      "Inter",
+      "Roboto",
+      '"Helvetica Neue"',
+      "Arial",
+      "sans-serif",
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(","),
+  },
+});
 
 function App() {
   const dispatch = useDispatch();
@@ -169,10 +194,6 @@ function App() {
   const alertShow = show;
   const alertMessage = message;
 
-  useEffect(() => {
-    dispatch(showAlert("Test message"));
-  }, [dispatch]);
-
   const handleAlertClose = () => {
     dispatch(clearAlert());
   };
@@ -180,43 +201,45 @@ function App() {
   return (
     <Router>
       <CssBaseline />
-      <div className={classes.root}>
-        <Header />
-        <Switch>
-          <Route exact path="/about">
-            <About />
-          </Route>
-          <Route exact path="/terms">
-            <Terms />
-          </Route>
-          <Route exact path="/">
-            <Index />
-          </Route>
-        </Switch>
-        <Footer />
-        <Snackbar
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          open={alertShow}
-          autoHideDuration={6000}
-          onClose={handleAlertClose}
-          message={alertMessage}
-          action={
-            <>
-              <IconButton
-                size="small"
-                aria-label="close"
-                color="inherit"
-                onClick={handleAlertClose}
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </>
-          }
-        />
-      </div>
+      <ThemeProvider theme={theme}>
+        <div className={classes.root}>
+          <Header />
+          <Switch>
+            <Route exact path="/about">
+              <About />
+            </Route>
+            <Route exact path="/terms">
+              <Terms />
+            </Route>
+            <Route exact path="/">
+              <Index />
+            </Route>
+          </Switch>
+          <Footer />
+          <Snackbar
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            open={alertShow}
+            autoHideDuration={6000}
+            onClose={handleAlertClose}
+            message={alertMessage}
+            action={
+              <>
+                <IconButton
+                  size="small"
+                  aria-label="close"
+                  color="inherit"
+                  onClick={handleAlertClose}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </>
+            }
+          />
+        </div>
+      </ThemeProvider>
     </Router>
   );
 }

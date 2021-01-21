@@ -33,11 +33,11 @@ const list = async (offset, limit) => {
   }
 };
 
-const create = async (content, stake) => {
+const create = async (content, stake, txHash) => {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ content, stake }),
+    body: JSON.stringify({ content, stake, txHash }),
   };
 
   try {

@@ -37,12 +37,12 @@ export const {
 
 export const postSelector = (state) => state.post;
 
-export const savePostRequest = ({ content, stake }, onSuccess) => {
+export const savePostRequest = ({ content, stake, txHash }, onSuccess) => {
   return async (dispatch) => {
     dispatch(setLoading(true));
 
     try {
-      const data = await postService.create(content, stake);
+      const data = await postService.create(content, stake, txHash);
 
       dispatch(savePostSuccess(data));
       onSuccess();
