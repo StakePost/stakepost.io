@@ -9,6 +9,9 @@ import { ethers } from "ethers";
 
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
+import Snackbar from "@material-ui/core/Snackbar";
+import IconButton from "@material-ui/core/IconButton";
+import CloseIcon from "@material-ui/icons/Close";
 
 import { Header } from "./components/header";
 import { Footer } from "./components/footer";
@@ -31,6 +34,8 @@ import {
 } from "./store/slices/auth";
 
 import { postSelector } from "./store/slices/post";
+
+import { showAlert, clearAlert, alertSelector } from "./store/slices/alert";
 
 import { getAuthFromStore, saveAuthToStore } from "../utils";
 import { ErrorCodes } from "./api";
@@ -160,6 +165,18 @@ function App() {
     }
   }, [dispatch, refreshNeeded]);
 
+  const { show, message } = useSelector(alertSelector);
+  const alertShow = show;
+  const alertMessage = message;
+
+  useEffect(() => {
+    dispatch(showAlert("Test message"));
+  }, [dispatch]);
+
+  const handleAlertClose = () => {
+    dispatch(clearAlert());
+  };
+
   return (
     <Router>
       <CssBaseline />
@@ -177,6 +194,28 @@ function App() {
           </Route>
         </Switch>
         <Footer />
+        <Snackbar
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          open={alertShow}
+          autoHideDuration={6000}
+          onClose={handleAlertClose}
+          message={alertMessage}
+          action={
+            <>
+              <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={handleAlertClose}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </>
+          }
+        />
       </div>
     </Router>
   );
