@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { postService } from "../../api";
+import { appendPost } from "./posts";
 
 export const initialState = {
   loading: false,
@@ -11,8 +12,8 @@ const postSlice = createSlice({
   name: "post",
   initialState,
   reducers: {
-    savePost: (state) => {
-      state.loading = true;
+    setLoading: (state, { payload }) => {
+      state.loading = payload;
       state.error = false;
     },
     savePostSuccess: (state, { payload }) => {
@@ -28,18 +29,24 @@ const postSlice = createSlice({
   },
 });
 
-export const { savePost, savePostSuccess, savePostFailure } = postSlice.actions;
+export const {
+  setLoading,
+  savePostSuccess,
+  savePostFailure,
+} = postSlice.actions;
 
 export const postSelector = (state) => state.post;
 
-export const savePostRequest = ({ content, stake }) => {
+export const savePostRequest = ({ content, stake }, onSuccess) => {
   return async (dispatch) => {
-    dispatch(savePost());
+    dispatch(setLoading(true));
 
     try {
       const data = await postService.create(content, stake);
 
       dispatch(savePostSuccess(data));
+      onSuccess();
+      dispatch(appendPost(data));
     } catch (error) {
       dispatch(savePostFailure(error));
     }

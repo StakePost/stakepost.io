@@ -125,6 +125,7 @@ export function registerRequest(account) {
       const data = await userService.register(account);
 
       dispatch(registerSuccess(data));
+      dispatch(nonceRequest(account));
     } catch (error) {
       const { code, message } = error;
       if (code === ErrorCodes.UNPROCESSABLE) {

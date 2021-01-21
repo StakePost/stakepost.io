@@ -14,8 +14,9 @@ const postsSlice = createSlice({
   name: "posts",
   initialState,
   reducers: {
-    getPosts: (state) => {
-      state.loading = true;
+    setLoading: (state, { payload }) => {
+      state.loading = payload;
+      state.error = false;
     },
     getPostsSuccess: (state, { payload }) => {
       state.count = payload.count;
@@ -29,20 +30,29 @@ const postsSlice = createSlice({
       state.loading = false;
       state.error = payload;
     },
+    appendPost: (state, { payload }) => {
+      state.entities = [payload, ...state.entities];
+      state.loading = false;
+      state.error = false;
+    },
   },
 });
 
 export const {
-  getPosts,
+  setLoading,
   getPostsSuccess,
   getPostsFailure,
+  appendPost,
 } = postsSlice.actions;
 
 export const postsSelector = (state) => state.posts;
 
-export const fetchPosts = (offset, limit) => {
+export const fetchPosts = (
+  offset = postsSelector.offset,
+  limit = postsSelector.limit
+) => {
   return async (dispatch) => {
-    dispatch(getPosts());
+    dispatch(setLoading(true));
 
     try {
       const data = await postService.list(offset, limit);

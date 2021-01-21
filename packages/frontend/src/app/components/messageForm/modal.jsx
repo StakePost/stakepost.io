@@ -29,7 +29,7 @@ export function MessageFormModal({ onClose, open }) {
   return (
     <StyledModal onClose={handleClose} open={open} title="Stake and Post">
       <div className={classes.modalContent}>
-        <MessageForm />
+        <MessageForm onClose={handleClose} />
       </div>
     </StyledModal>
   );
