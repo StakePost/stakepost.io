@@ -25,20 +25,20 @@ export class PostsService {
   ): Promise<PaginatedPostsResultDto> {
     let { limit, offset } = paginationQuery;
 
-    limit = limit || 10;
-    offset = offset || 0;
+    limit = Number(limit) || 10;
+    offset = Number(offset) || 0;
     const count = await this.postModel.estimatedDocumentCount();
     const posts = await this.postModel
       .find()
-      .skip(Number(offset))
-      .limit(Number(limit))
-      .sort({ createdAt: -1, pinned: -1 })
+      .skip(offset)
+      .limit(limit)
+      .sort({ pinned: -1, createdAt: -1 })
       .populate('author', 'address', User.name)
       .exec();
     return {
       count,
-      offset: offset,
-      limit: limit,
+      offset,
+      limit,
       data: posts,
     };
   }
@@ -62,15 +62,14 @@ export class PostsService {
   ): Promise<PaginatedPostsResultDto> {
     let { limit, offset } = paginationQuery;
 
-    limit = limit || 10;
-    offset = offset || 0;
-    console.log('Limit', limit);
+    limit = Number(limit) || 10;
+    offset = Number(offset) || 0;
     const count = await this.postModel.countDocuments({ author: user });
     const posts = await this.postModel
       .find({ author: user })
-      .skip(Number(offset))
-      .limit(Number(limit))
-      .sort('-pinned')
+      .skip(offset)
+      .limit(limit)
+      .sort({ pinned: -1, createdAt: -1 })
       .populate('author', 'address', User.name)
       .exec();
     return {
@@ -88,7 +87,7 @@ export class PostsService {
       .exec();
 
     if (!post) {
-      throw new NotFoundException(`Post #${id} not found`);
+      throw new NotFoundException(`Post not found`);
     }
 
     return post;
@@ -119,7 +118,7 @@ export class PostsService {
       .populate('author', 'address', User.name);
 
     if (!existingPost) {
-      throw new NotFoundException(`Post #${id} not found`);
+      throw new NotFoundException(`Post not found`);
     }
 
     if (
@@ -149,7 +148,7 @@ export class PostsService {
     });
 
     if (!deletedPost) {
-      throw new NotFoundException(`Post #${id} not found`);
+      throw new NotFoundException(`Post not found`);
     }
 
     await this.pinataService.unpin(deletedPost.hash);
