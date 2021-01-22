@@ -8,6 +8,7 @@ import { CronModule } from './cron/cron.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { Web3Module } from './web3/web3.module';
+import { TwitterModule } from './twitter/twitter.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { Web3Module } from './web3/web3.module';
     AuthModule,
     UsersModule,
     Web3Module,
+    TwitterModule,
   ],
 })
 export class AppModule {}

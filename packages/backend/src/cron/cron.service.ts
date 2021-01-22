@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import * as moment from 'moment';
 import { PostsService } from 'src/posts/posts.service';
 import { PostDocument } from 'src/posts/schemas';
+import { TwitterService } from 'src/twitter/twitter.service';
 import { delIPFSPrefix } from 'src/utils';
 import { Web3Service } from 'src/web3/web3.service';
 
@@ -13,6 +14,7 @@ export class CronService {
   constructor(
     private readonly web3Service: Web3Service,
     private readonly postsService: PostsService,
+    private readonly twitterService: TwitterService,
   ) {}
 
   //@Cron(CronExpression.EVERY_MINUTE)
@@ -32,9 +34,9 @@ export class CronService {
 
       await this.postsService.unpinAll();
       await this.postsService.pin(topPost.id);
+      await this.twitterService.tweet(topPost);
 
       this.logger.debug(`Pinning top post to mongo and twitter`);
-      //twit post
     } else {
       this.logger.debug(`Top post NOT FOUND`);
     }
@@ -56,14 +58,16 @@ export class CronService {
 
     this.logger.debug(`Validating post with blockchain data [ID]=${post.id}`);
 
-    // const hash = post.hash;
-    // const web3Hash = delIPFSPrefix(
-    //   ethers.utils.hexlify(ethers.utils.base58.decode(hash)),
-    // );
-    // console.log('HASH', hash);
-    // console.log('WEB3HASH', web3Hash);
-
     const web3Post = await this.web3Service.getPostByUser(post.author.address);
+
+    const hash = post.hash;
+    const web3Hash = delIPFSPrefix(
+      ethers.utils.hexlify(ethers.utils.base58.decode(hash)),
+    );
+    console.log('HASH', hash);
+    console.log('WEB3HAH', web3Post);
+    console.log('POST', post);
+    console.log('WEB3POST', web3Post);
 
     if (
       web3Post !== undefined &&
