@@ -1,4 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('dotenv').config();
+
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ethers } from 'ethers';
 import * as moment from 'moment';
@@ -17,7 +21,7 @@ export class CronService {
     private readonly twitterService: TwitterService,
   ) {}
 
-  //@Cron(CronExpression.EVERY_MINUTE)
+  @Cron(process.env.PUBLISH_CRON_PATTERN)
   async publishPost() {
     this.logger.debug('#publishPost');
 
