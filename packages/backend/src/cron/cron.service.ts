@@ -38,7 +38,7 @@ export class CronService {
 
       await this.postsService.unpinAll();
       await this.postsService.pin(topPost.id);
-      await this.twitterService.tweet(topPost);
+      //await this.twitterService.tweet(topPost);
 
       this.logger.debug(`Pinning top post to mongo and twitter`);
     } else {
@@ -63,15 +63,6 @@ export class CronService {
     this.logger.debug(`Validating post with blockchain data [ID]=${post.id}`);
 
     const web3Post = await this.web3Service.getPostByUser(post.author.address);
-
-    const hash = post.hash;
-    const web3Hash = delIPFSPrefix(
-      ethers.utils.hexlify(ethers.utils.base58.decode(hash)),
-    );
-    console.log('HASH', hash);
-    console.log('WEB3HAH', web3Post);
-    console.log('POST', post);
-    console.log('WEB3POST', web3Post);
 
     if (
       web3Post !== undefined &&
