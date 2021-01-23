@@ -49,6 +49,22 @@ const removeAuthFromStore = () => {
   localStorage.removeItem("refreshToken");
 };
 
+const isTokenExpired = (token) => {
+  if (!token) {
+    return null;
+  }
+
+  const jwt = JSON.parse(atob(token.split(".")[1]));
+
+  const exp = (jwt && jwt.exp && jwt.exp * 1000) || null;
+
+  if (!exp) {
+    return false;
+  }
+
+  return Date.now() > exp;
+};
+
 export {
   isBrowser,
   truncateAddress,
@@ -58,4 +74,5 @@ export {
   saveAuthToStore,
   getAuthFromStore,
   removeAuthFromStore,
+  isTokenExpired,
 };
