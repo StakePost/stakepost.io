@@ -21,6 +21,7 @@ import {
 } from "../../store/slices/post";
 
 import { ethSelector } from "../../store/slices/eth";
+import { authSelector } from "../../store/slices/auth";
 
 import config from "../../config";
 
@@ -29,6 +30,7 @@ export function MessageForm({ onClose }) {
   const { library } = useWeb3React();
   const { loading } = useSelector(postSelector);
   const { account, balance } = useSelector(ethSelector);
+  const { token, refreshToken } = useSelector(authSelector);
 
   const classes = useStyles();
 
@@ -61,7 +63,7 @@ export function MessageForm({ onClose }) {
     stakePost(values.content, account, values.stake)
       .then((result) => {
         values.txHash = result.hash;
-        dispatch(savePostRequest(values, onClose));
+        dispatch(savePostRequest(values, token, refreshToken, onClose));
       })
       .catch((err) => {
         console.log(err);

@@ -34,16 +34,11 @@ import {
   restoreLoginSuccess,
   signatureSuccess,
   signatureFailure,
-  refreshRequest,
-  setRefreshNeeded,
 } from "./store/slices/auth";
-
-import { postSelector } from "./store/slices/post";
 
 import { clearAlert, alertSelector } from "./store/slices/alert";
 
 import { getAuthFromStore, saveAuthToStore } from "../utils";
-import { ErrorCodes } from "./api";
 
 const theme = createMuiTheme({
   palette: {
@@ -73,10 +68,8 @@ function App() {
     authorized,
     token,
     refreshToken,
-    refreshNeeded,
   } = useSelector(authSelector);
 
-  const { error } = useSelector(postSelector);
   const { account, library } = useWeb3React();
   const classes = useStyles();
 
@@ -168,27 +161,7 @@ function App() {
         });
       }
     }
-  }, [authorized, dispatch, account, library]);
-
-  useEffect(() => {
-    if (error.code === ErrorCodes.Unauthorized) {
-      dispatch(setRefreshNeeded(refreshToken));
-    }
-  }, [dispatch, error, refreshNeeded, refreshToken]);
-
-  useEffect(() => {
-    if (refreshNeeded) {
-      const {
-        storeAccount,
-        storeToken,
-        storeRefreshToken,
-      } = getAuthFromStore();
-
-      if (storeAccount && storeToken && storeRefreshToken) {
-        dispatch(refreshRequest(storeRefreshToken));
-      }
-    }
-  }, [dispatch, refreshNeeded]);
+  }, [authorized, dispatch, account]);
 
   const { show, message } = useSelector(alertSelector);
   const alertShow = show;

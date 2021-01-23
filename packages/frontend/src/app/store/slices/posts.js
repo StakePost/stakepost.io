@@ -14,8 +14,8 @@ const postsSlice = createSlice({
   name: "posts",
   initialState,
   reducers: {
-    setLoading: (state, { payload }) => {
-      state.loading = payload;
+    setLoading: (state) => {
+      state.loading = true;
       state.error = false;
     },
     getPostsSuccess: (state, { payload }) => {
@@ -53,7 +53,7 @@ export const fetchPosts = (
   limit = postsSelector.limit
 ) => {
   return async (dispatch) => {
-    dispatch(setLoading(true));
+    dispatch(setLoading());
 
     try {
       const data = await postService.list(offset, limit);

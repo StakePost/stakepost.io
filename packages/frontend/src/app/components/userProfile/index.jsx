@@ -24,13 +24,14 @@ import {
   removeAuthFromStore,
 } from "../../../utils";
 import { ethSelector, deacivate } from "../../store/slices/eth";
-import { logout } from "../../store/slices/auth";
+import { logout, meRequest, authSelector } from "../../store/slices/auth";
 import { showAlert } from "../../store/slices/alert";
 import config from "../../config";
 
 export function UserProfile() {
   const dispatch = useDispatch();
   const { account, image, balance } = useSelector(ethSelector);
+  const { token, refreshToken } = useSelector(authSelector);
   const { library, chainId, deactivate } = useWeb3React();
 
   const classes = useStyles();
@@ -117,6 +118,10 @@ export function UserProfile() {
     fetchData();
   }, [account, library, chainId]);
 
+  const handleMe = () => {
+    dispatch(meRequest(token, refreshToken));
+  };
+
   return (
     <Grid container alignItems="center" className={classes.root}>
       <ButtonGroup
@@ -130,7 +135,7 @@ export function UserProfile() {
           disableFocusRipple
           disableRipple
           size="small"
-          onClick={deactivate}
+          onClick={handleMe}
         >
           <div className={classes.balance}>{balance} ETH</div>
           <Divider orientation="vertical" flexItem />

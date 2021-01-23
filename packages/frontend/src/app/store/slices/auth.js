@@ -1,15 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { isTokenExpired } from "../../../utils";
 import { ErrorCodes, userService } from "../../api";
 
 export const initialState = {
   loading: false,
   requestSignature: false,
-  refreshNeeded: false,
   authorized: false,
-  error: null,
+  authError: false,
   nonce: null,
   token: null,
   refreshToken: null,
+  me: null,
 };
 
 const authSlice = createSlice({
@@ -25,7 +26,7 @@ const authSlice = createSlice({
     },
     registerFailure: (state, { payload }) => {
       state.loading = false;
-      state.error = payload;
+      state.authError = payload;
     },
     restoreLoginSuccess: (state, { payload }) => {
       state.loading = false;
@@ -41,7 +42,7 @@ const authSlice = createSlice({
     },
     loginFailure: (state, { payload }) => {
       state.loading = false;
-      state.error = payload;
+      state.authError = payload;
       state.token = null;
       state.refreshToken = null;
     },
@@ -51,48 +52,50 @@ const authSlice = createSlice({
     },
     nonceFailure: (state, { payload }) => {
       state.loading = false;
-      state.error = payload;
+      state.authError = payload;
       state.nonce = null;
     },
     signatureRequest: (state) => {
       state.loading = true;
-      state.error = null;
+      state.authError = null;
       state.requestSignature = true;
     },
     signatureSuccess: (state) => {
       state.loading = false;
-      state.error = null;
+      state.authError = false;
       state.requestSignature = false;
     },
     signatureFailure: (state, { payload }) => {
       state.loading = false;
-      state.error = payload;
+      state.authError = payload;
       state.requestSignature = false;
-    },
-    setRefreshNeeded: (state, { payload }) => {
-      state.loading = true;
-      state.error = null;
-      state.refreshNeeded = payload;
     },
     refreshSuccess: (state, { payload }) => {
       state.loading = false;
-      state.error = null;
-      state.refreshNeeded = false;
+      state.authError = false;
       state.token = payload.token;
     },
     refreshFailure: (state, { payload }) => {
       state.loading = false;
-      state.error = payload;
-      state.refreshNeeded = false;
+      state.authError = payload;
     },
     logout: (state) => {
       state.loading = false;
       state.requestSignature = false;
       state.authorized = false;
-      state.error = null;
+      state.authError = false;
       state.nonce = null;
       state.token = null;
       state.refreshToken = null;
+    },
+    meSuccess: (state, { payload }) => {
+      state.loading = false;
+      state.me = payload.address;
+    },
+    meFailure: (state, { payload }) => {
+      state.loading = false;
+      state.authError = payload;
+      state.me = null;
     },
   },
 });
@@ -109,10 +112,11 @@ export const {
   signatureRequest,
   signatureSuccess,
   signatureFailure,
-  setRefreshNeeded,
   refreshSuccess,
   refreshFailure,
   logout,
+  meSuccess,
+  meFailure,
 } = authSlice.actions;
 
 export const authSelector = (state) => state.auth;
@@ -126,8 +130,8 @@ export function registerRequest(account) {
 
       dispatch(registerSuccess(data));
       dispatch(nonceRequest(account));
-    } catch (error) {
-      const { code, message } = error;
+    } catch (e) {
+      const { code, message } = e;
       if (code === ErrorCodes.UNPROCESSABLE) {
         dispatch(nonceRequest(account));
       } else {
@@ -136,6 +140,7 @@ export function registerRequest(account) {
     }
   };
 }
+
 export function loginRequest(account, signature) {
   return async (dispatch) => {
     dispatch(setLoading());
@@ -149,8 +154,8 @@ export function loginRequest(account, signature) {
           refreshToken: response.data.payload.refresh_token,
         })
       );
-    } catch (error) {
-      const { code, message } = error;
+    } catch (e) {
+      const { code, message } = e;
       dispatch(loginFailure({ code, message }));
     }
   };
@@ -168,8 +173,8 @@ export function refreshRequest(refreshToken) {
           token: response.data.payload.token,
         })
       );
-    } catch (error) {
-      const { code, message } = error;
+    } catch (e) {
+      const { code, message } = e;
       dispatch(refreshFailure({ code, message }));
     }
   };
@@ -184,9 +189,38 @@ export function nonceRequest(account) {
 
       dispatch(nonceSuccess(data));
       dispatch(signatureRequest());
-    } catch (error) {
-      const { code, message } = error;
+    } catch (e) {
+      const { code, message } = e;
       dispatch(nonceFailure({ code, message }));
+    }
+  };
+}
+
+export function meRequest(token, refresh) {
+  return async (dispatch) => {
+    dispatch(setLoading());
+
+    try {
+      if (isTokenExpired(token)) {
+        const response = await userService.refresh(refresh);
+
+        dispatch(
+          refreshSuccess({
+            token: response.data.payload.token,
+          })
+        );
+        setTimeout(async () => {
+          const data = await userService.me();
+          dispatch(meSuccess(data));
+        }, 500);
+      } else {
+        const data = await userService.me();
+        dispatch(meSuccess(data));
+      }
+    } catch (e) {
+      const { code, message } = e;
+
+      dispatch(meFailure({ code, message }));
     }
   };
 }
