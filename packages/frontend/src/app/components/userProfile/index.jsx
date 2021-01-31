@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useWeb3React } from "@web3-react/core";
-import { ethers } from "ethers";
 import { DateTime } from "luxon";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -18,34 +17,26 @@ import MenuList from "@material-ui/core/MenuList";
 import Avatar from "@material-ui/core/Avatar";
 import Divider from "@material-ui/core/Divider";
 
-import {
-  truncateAddress,
-  addIPFSPrefix,
-  removeAuthFromStore,
-} from "../../../utils";
-import { ethSelector, deacivate } from "../../store/slices/eth";
-import { logout, meRequest, authSelector } from "../../store/slices/auth";
+import { truncateAddress } from "../../../utils";
+
+import { logoutRequest } from "../../store/slices/auth";
 import { showAlert } from "../../store/slices/alert";
-import config from "../../config";
+
+import { ethService } from "../../api";
 
 export function UserProfile() {
   const dispatch = useDispatch();
-  const { account, image, balance } = useSelector(ethSelector);
-  const { token, refreshToken } = useSelector(authSelector);
-  const { library, chainId, deactivate } = useWeb3React();
+  const { account, image, balance, post } = useSelector((state) => state.eth);
+  const { library, deactivate } = useWeb3React();
 
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
 
-  const [post, setPost] = useState(null);
-
   const handleLogout = (event) => {
     deactivate();
-    dispatch(deacivate());
-    dispatch(logout());
-    removeAuthFromStore();
+    dispatch(logoutRequest());
   };
 
   const handleToggle = () => {
@@ -59,67 +50,16 @@ export function UserProfile() {
     setOpen(false);
   };
 
-  const exitPost = async () => {
+  const handleExit = async (event) => {
     try {
-      const contract = new ethers.Contract(
-        config.StakepostContractAt,
-        config.StakepostContractAbi,
-        library.getSigner(account)
-      );
-      await contract.exit();
+      await ethService.sendExitTx({ account }, library);
     } catch (e) {
-      const match = e.message.match(/\{.*\:\{.*\:.*\}\}/gi);
-
-      if (match) {
-        const error = JSON.parse(match[0]);
-        dispatch(showAlert(error.message));
-      }
+      dispatch(showAlert(e.message));
     }
   };
 
-  useEffect(() => {
-    async function fetchData() {
-      if (!!account && !!library) {
-        let stale = false;
-
-        const contract = new ethers.Contract(
-          config.StakepostContractAt,
-          config.StakepostContractAbi,
-          library
-        );
-
-        try {
-          const postId = await contract.getStakepostIndexByUser(account);
-          if (postId.gte(0)) {
-            const post = await contract.posts(postId);
-            if (post && !stale) {
-              const hash = ethers.utils.base58.encode(addIPFSPrefix(post.post));
-              const p = {
-                hash: hash,
-                user: post.user,
-                stake: ethers.utils.formatEther(post.stake),
-                time: new Date(post.time.toNumber() * 1000),
-              };
-              setPost(p);
-            }
-          }
-        } catch (e) {
-          if (!stale) {
-            setPost(null);
-          }
-        }
-
-        return () => {
-          stale = true;
-          setPost(undefined);
-        };
-      }
-    }
-    fetchData();
-  }, [account, library, chainId]);
-
   const handleMe = () => {
-    dispatch(meRequest(token, refreshToken));
+    //dispatch(meRequest(token, refreshToken));
   };
 
   return (
@@ -173,9 +113,9 @@ export function UserProfile() {
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="split-button-menu">
                   {post && (
-                    <MenuItem key="post" onClick={exitPost}>
+                    <MenuItem key="post" onClick={handleExit}>
                       {truncateAddress(post.hash)} | {post.stake} ETH |{" "}
-                      {DateTime.fromJSDate(post.time).toRelative()}
+                      {DateTime.fromMillis(post.time).toRelative()}
                     </MenuItem>
                   )}
                   <MenuItem key="deactivate" onClick={handleLogout}>

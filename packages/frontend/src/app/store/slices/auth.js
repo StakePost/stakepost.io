@@ -1,228 +1,243 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { isTokenExpired } from "../../../utils";
-import { ErrorCodes, userService } from "../../api";
+import { createAsyncThunk, createSlice, unwrapResult } from "@reduxjs/toolkit";
+import { ErrorCodes, userService, ethService, ApiError } from "../../api";
+import { AuthStore } from "../../../utils";
 
-export const initialState = {
+const initialState = {
   loading: false,
-  requestSignature: false,
+  error: null,
   authorized: false,
-  authError: false,
-  nonce: null,
-  token: null,
-  refreshToken: null,
-  me: null,
+  data: {
+    account: null,
+    nonce: null,
+    token: null,
+    refresh: null,
+  },
 };
+/*
+- Login Workflow
+1) check nonce, if 404 then register and get nonce again
+2) get nonce, save to state
+3) request signature from user
+4) login request, save token and refresh token to state and store
+*/
+export const loginRequest = createAsyncThunk(
+  "auth/loginRequest",
+  async ({ account, provider }, { getState, rejectWithValue }) => {
+    const { loading } = getState().auth;
+
+    if (!loading) {
+      return;
+    }
+
+    let nonce = null;
+
+    try {
+      const nonceResponse = await userService.nonce(account);
+      nonce = nonceResponse.nonce;
+    } catch (e) {
+      if (e.code === ErrorCodes.NOTFOUND) {
+        try {
+          await userService.register(account);
+          const nonceResponse = await userService.nonce(account);
+          nonce = nonceResponse.nonce;
+        } catch (e) {}
+      } else {
+        const { code, message } = e;
+        return rejectWithValue({ code, message });
+      }
+    }
+
+    try {
+      if (nonce === null) {
+        throw new ApiError(
+          ErrorCodes.UNSPECIFIED,
+          "Failed to load nonce for the user"
+        );
+      }
+
+      const { signature } = await ethService.getUserSignature(
+        { account, nonce },
+        provider
+      );
+
+      const loginResponse = await userService.login(account, signature);
+
+      AuthStore.save({
+        account,
+        nonce,
+        token: loginResponse.data.payload.token,
+        refresh: loginResponse.data.payload.refresh_token,
+      });
+
+      return {
+        account,
+        nonce,
+        token: loginResponse.data.payload.token,
+        refresh: loginResponse.data.payload.refresh_token,
+      };
+    } catch (e) {
+      const { code, message } = e;
+      return rejectWithValue({ code, message });
+    }
+  }
+);
+
+export const logoutRequest = createAsyncThunk(
+  "auth/logoutRequest",
+  async (_empty, { getState, rejectWithValue }) => {
+    const { loading } = getState().auth;
+
+    if (!loading) {
+      return;
+    }
+
+    try {
+      AuthStore.remove();
+    } catch (e) {
+      const { code, message } = e;
+      return rejectWithValue({ code, message });
+    }
+  }
+);
+
+/*
+- Status Workflow
+1) check store for auth info
+2) if found, save to state and set authorized = true
+3) if not found, dispatch Login Workflow
+*/
+export const statusRequest = createAsyncThunk(
+  "auth/statusRequest",
+  async ({ account, provider }, { getState, rejectWithValue, dispatch }) => {
+    const { loading } = getState().auth;
+    let { authorized } = getState().auth;
+
+    if (!loading) {
+      return;
+    }
+
+    try {
+      if (!authorized) {
+        const {
+          storeAccount,
+          storeNonce,
+          storeToken,
+          storeRefresh,
+        } = AuthStore.get();
+
+        if (storeAccount && storeNonce && storeToken && storeRefresh) {
+          const result = await dispatch(
+            authRestore({
+              account: storeAccount,
+              nonce: storeNonce,
+              token: storeToken,
+              refresh: storeRefresh,
+            })
+          );
+          unwrapResult(result);
+        } else {
+          const result = await dispatch(loginRequest({ account, provider }));
+          unwrapResult(result);
+        }
+        authorized = true;
+      }
+      return { authorized };
+    } catch (e) {
+      const { code, message } = e;
+      return rejectWithValue({ code, message });
+    }
+  }
+);
+
+export const refreshRequest = createAsyncThunk(
+  "auth/refreshRequest",
+  async (_empty, { getState, rejectWithValue }) => {
+    const { loading, data } = getState().auth;
+    if (!loading) {
+      return;
+    }
+    try {
+      const response = await userService.refresh(data.refresh);
+      return response.data.payload.token;
+    } catch (e) {
+      const { code, message } = e;
+      return rejectWithValue({ code, message });
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setLoading: (state) => {
-      state.loading = true;
+    authRestore: (state, { payload }) => {
+      state.data = payload;
     },
-    registerSuccess: (state, { payload }) => {
+  },
+  extraReducers: {
+    // status action
+    [statusRequest.pending]: (state, action) => {
+      if (!state.loading) {
+        state.loading = true;
+      }
+    },
+    [statusRequest.fulfilled]: (state, action) => {
       state.loading = false;
-      state.account = payload.account;
+      state.authorized = action.payload.authorized;
     },
-    registerFailure: (state, { payload }) => {
+    [statusRequest.rejected]: (state, action) => {
       state.loading = false;
-      state.authError = payload;
+      state.error = action.error;
     },
-    restoreLoginSuccess: (state, { payload }) => {
+
+    // login action
+    [loginRequest.pending]: (state, action) => {
+      if (!state.loading) {
+        state.loading = true;
+      }
+    },
+    [loginRequest.fulfilled]: (state, action) => {
       state.loading = false;
-      state.authorized = true;
-      state.token = payload.token;
-      state.refreshToken = payload.refreshToken;
+      state.data = action.payload;
     },
-    loginSuccess: (state, { payload }) => {
+    [loginRequest.rejected]: (state, action) => {
       state.loading = false;
-      state.authorized = true;
-      state.token = payload.token;
-      state.refreshToken = payload.refreshToken;
+      state.error = action.error;
     },
-    loginFailure: (state, { payload }) => {
+
+    // logout action
+    [logoutRequest.pending]: (state, action) => {
+      if (!state.loading) {
+        state.loading = true;
+      }
+    },
+    [logoutRequest.fulfilled]: (state, action) => {
       state.loading = false;
-      state.authError = payload;
-      state.token = null;
-      state.refreshToken = null;
-    },
-    nonceSuccess: (state, { payload }) => {
-      state.loading = false;
-      state.nonce = payload.nonce;
-    },
-    nonceFailure: (state, { payload }) => {
-      state.loading = false;
-      state.authError = payload;
-      state.nonce = null;
-    },
-    signatureRequest: (state) => {
-      state.loading = true;
-      state.authError = null;
-      state.requestSignature = true;
-    },
-    signatureSuccess: (state) => {
-      state.loading = false;
-      state.authError = false;
-      state.requestSignature = false;
-    },
-    signatureFailure: (state, { payload }) => {
-      state.loading = false;
-      state.authError = payload;
-      state.requestSignature = false;
-    },
-    refreshSuccess: (state, { payload }) => {
-      state.loading = false;
-      state.authError = false;
-      state.token = payload.token;
-    },
-    refreshFailure: (state, { payload }) => {
-      state.loading = false;
-      state.authError = payload;
-    },
-    logout: (state) => {
-      state.loading = false;
-      state.requestSignature = false;
       state.authorized = false;
-      state.authError = false;
-      state.nonce = null;
-      state.token = null;
-      state.refreshToken = null;
+      state.data = initialState.data;
     },
-    meSuccess: (state, { payload }) => {
+    [logoutRequest.rejected]: (state, action) => {
       state.loading = false;
-      state.me = payload.address;
+      state.error = action.error;
     },
-    meFailure: (state, { payload }) => {
+
+    // refresh action
+    [refreshRequest.pending]: (state, action) => {
+      if (!state.loading) {
+        state.loading = true;
+      }
+    },
+    [refreshRequest.fulfilled]: (state, action) => {
       state.loading = false;
-      state.authError = payload;
-      state.me = null;
+      state.data.token = action.payload;
+    },
+    [refreshRequest.rejected]: (state, action) => {
+      state.loading = false;
+      state.error = action.error;
     },
   },
 });
 
-export const {
-  setLoading,
-  registerSuccess,
-  registerFailure,
-  restoreLoginSuccess,
-  loginSuccess,
-  loginFailure,
-  nonceSuccess,
-  nonceFailure,
-  signatureRequest,
-  signatureSuccess,
-  signatureFailure,
-  refreshSuccess,
-  refreshFailure,
-  logout,
-  meSuccess,
-  meFailure,
-} = authSlice.actions;
-
-export const authSelector = (state) => state.auth;
-
-export function registerRequest(account) {
-  return async (dispatch) => {
-    dispatch(setLoading());
-
-    try {
-      const data = await userService.register(account);
-
-      dispatch(registerSuccess(data));
-      dispatch(nonceRequest(account));
-    } catch (e) {
-      const { code, message } = e;
-      if (code === ErrorCodes.UNPROCESSABLE) {
-        dispatch(nonceRequest(account));
-      } else {
-        dispatch(registerFailure({ code, message }));
-      }
-    }
-  };
-}
-
-export function loginRequest(account, signature) {
-  return async (dispatch) => {
-    dispatch(setLoading());
-
-    try {
-      const response = await userService.login(account, signature);
-
-      dispatch(
-        loginSuccess({
-          token: response.data.payload.token,
-          refreshToken: response.data.payload.refresh_token,
-        })
-      );
-    } catch (e) {
-      const { code, message } = e;
-      dispatch(loginFailure({ code, message }));
-    }
-  };
-}
-
-export function refreshRequest(refreshToken) {
-  return async (dispatch) => {
-    dispatch(setLoading());
-
-    try {
-      const response = await userService.refresh(refreshToken);
-
-      dispatch(
-        refreshSuccess({
-          token: response.data.payload.token,
-        })
-      );
-    } catch (e) {
-      const { code, message } = e;
-      dispatch(refreshFailure({ code, message }));
-    }
-  };
-}
-
-export function nonceRequest(account) {
-  return async (dispatch) => {
-    dispatch(setLoading());
-
-    try {
-      const data = await userService.nonce(account);
-
-      dispatch(nonceSuccess(data));
-      dispatch(signatureRequest());
-    } catch (e) {
-      const { code, message } = e;
-      dispatch(nonceFailure({ code, message }));
-    }
-  };
-}
-
-export function meRequest(token, refresh) {
-  return async (dispatch) => {
-    dispatch(setLoading());
-
-    try {
-      if (isTokenExpired(token)) {
-        const response = await userService.refresh(refresh);
-
-        dispatch(
-          refreshSuccess({
-            token: response.data.payload.token,
-          })
-        );
-        setTimeout(async () => {
-          const data = await userService.me();
-          dispatch(meSuccess(data));
-        }, 500);
-      } else {
-        const data = await userService.me();
-        dispatch(meSuccess(data));
-      }
-    } catch (e) {
-      const { code, message } = e;
-
-      dispatch(meFailure({ code, message }));
-    }
-  };
-}
+export const { authRestore } = authSlice.actions;
 
 export default authSlice.reducer;

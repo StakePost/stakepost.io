@@ -1,3 +1,5 @@
+import { ethers } from "ethers";
+
 const isBrowser = () =>
   typeof window !== "undefined" && typeof document !== "undefined"
     ? true
@@ -12,46 +14,56 @@ const truncateAddress = (address, firstSegLength = 5, lastSegLength = 4) => {
     : "...";
 };
 
-const IPFSHashPrefix = "0x1220";
-
-const delIPFSPrefix = (hash) => {
-  return "0x" + hash.replace(IPFSHashPrefix, "");
+const HASH_PREFIX = "0x1220";
+const HashUtils = {
+  addPrefix: (hash) => HASH_PREFIX + hash.replace("0x", ""),
+  removePrefix: (hash) => "0x" + hash.replace(HASH_PREFIX, ""),
+  fromEth: (hash) => ethers.utils.base58.encode(HashUtils.addPrefix(hash)),
+  toEth: (hash) =>
+    HashUtils.removePrefix(
+      ethers.utils.hexlify(ethers.utils.base58.decode(hash))
+    ),
 };
-const addIPFSPrefix = (hash) => {
-  return IPFSHashPrefix + hash.replace("0x", "");
+
+const AuthStore = {
+  get: () => ({
+    storeAccount: localStorage.getItem("account"),
+    storeNonce: localStorage.getItem("nonce"),
+    storeToken: localStorage.getItem("token"),
+    storeRefresh: localStorage.getItem("refresh"),
+  }),
+  save: ({ account, nonce, token, refresh }) => {
+    localStorage.setItem("account", account);
+    localStorage.setItem("nonce", nonce);
+    localStorage.setItem("token", token);
+    localStorage.setItem("refresh", refresh);
+  },
+  remove: () => {
+    localStorage.removeItem("account");
+    localStorage.removeItem("nonce");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
+  },
 };
 
 const authHeader = () => {
-  const token = localStorage.getItem("token");
+  const { storeToken } = AuthStore.get();
 
-  if (token) {
-    return { Authorization: `Bearer ${token}` };
+  if (storeToken) {
+    return { Authorization: `Bearer ${storeToken}` };
   } else {
     return {};
   }
 };
 
-const saveAuthToStore = ({ account, token, refreshToken }) => {
-  localStorage.setItem("account", account);
-  localStorage.setItem("token", token);
-  localStorage.setItem("refreshToken", refreshToken);
-};
-const getAuthFromStore = () => {
-  return {
-    storeAccount: localStorage.getItem("account"),
-    storeToken: localStorage.getItem("token"),
-    storeRefreshToken: localStorage.getItem("refreshToken"),
-  };
-};
-const removeAuthFromStore = () => {
-  localStorage.removeItem("account");
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
-};
-
 const isTokenExpired = (token) => {
-  if (!token) {
-    return null;
+  if (
+    !token ||
+    token === undefined ||
+    typeof token === "undefined" ||
+    token === "undefined"
+  ) {
+    return true;
   }
 
   const jwt = JSON.parse(atob(token.split(".")[1]));
@@ -68,11 +80,8 @@ const isTokenExpired = (token) => {
 export {
   isBrowser,
   truncateAddress,
-  delIPFSPrefix,
-  addIPFSPrefix,
+  HashUtils,
   authHeader,
-  saveAuthToStore,
-  getAuthFromStore,
-  removeAuthFromStore,
+  AuthStore,
   isTokenExpired,
 };

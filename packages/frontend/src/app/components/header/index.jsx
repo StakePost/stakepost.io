@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -16,14 +16,12 @@ import GithubIcon from "@material-ui/icons/GitHub";
 import { UnlockButton } from "../unlockButton";
 import { UserProfile } from "../userProfile";
 
-import { ethSelector } from "../../store/slices/eth";
-
 const LinkBehavior = React.forwardRef((props, ref) => (
   <RouterLink ref={ref} {...props} />
 ));
 export function Header() {
   const classes = useStyles();
-  const { account } = useSelector(ethSelector);
+  const { authorized } = useSelector((state) => state.auth);
 
   return (
     <Container maxWidth="lg">
@@ -43,8 +41,8 @@ export function Header() {
               <GithubIcon />
             </IconButton>
           </Box>
-          {!account && <UnlockButton />}
-          {account && <UserProfile />}
+          {!authorized && <UnlockButton />}
+          {authorized && <UserProfile />}
         </Toolbar>
       </AppBar>
     </Container>

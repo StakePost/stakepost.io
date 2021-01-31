@@ -1,8 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { unwrapResult } from "@reduxjs/toolkit";
 import { useWeb3React } from "@web3-react/core";
-import { ethers } from "ethers";
-import HashGenerator from "ipfs-only-hash";
 
 import { Formik, Form, Field } from "formik";
 import { TextField } from "formik-material-ui";
@@ -12,25 +11,20 @@ import Backdrop from "@material-ui/core/Backdrop";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { StyledButton } from "../styledButton";
-import { delIPFSPrefix } from "../../../utils";
+import { isTokenExpired } from "../../../utils";
 
-import {
-  postSelector,
-  savePostRequest,
-  setLoading,
-} from "../../store/slices/post";
+import { setLoading, createPostRequest } from "../../store/slices/post";
+import { refreshRequest } from "../../store/slices/auth";
+import { showAlert } from "../../store/slices/alert";
 
-import { ethSelector } from "../../store/slices/eth";
-import { authSelector } from "../../store/slices/auth";
-
-import config from "../../config";
+import { ethService } from "../../api";
 
 export function MessageForm({ onClose }) {
   const dispatch = useDispatch();
   const { library } = useWeb3React();
-  const { loading } = useSelector(postSelector);
-  const { account, balance } = useSelector(ethSelector);
-  const { token, refreshToken } = useSelector(authSelector);
+  const { loading } = useSelector((state) => state.post);
+  const { account, balance } = useSelector((state) => state.eth);
+  const { data } = useSelector((state) => state.auth);
 
   const classes = useStyles();
 
@@ -59,36 +53,26 @@ export function MessageForm({ onClose }) {
 
     return errors;
   };
-  const onSubmit = (values, { loading }) => {
-    stakePost(values.content, account, values.stake)
-      .then((result) => {
-        values.txHash = result.hash;
-        dispatch(savePostRequest(values, token, refreshToken, onClose));
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  const stakePost = async (content, author, stake) => {
+  const onSubmit = async (values, { loading }) => {
     try {
-      const contract = new ethers.Contract(
-        config.StakepostContractAt,
-        config.StakepostContractAbi,
-        library.getSigner(account)
-      );
+      if (isTokenExpired(data.token)) {
+        const refreshAction = await dispatch(refreshRequest());
+        unwrapResult(refreshAction);
+      }
 
-      const postContent = JSON.stringify({ content, author, stake });
-      const data = Buffer.from(postContent);
-      const hash = await HashGenerator.of(data);
-      const encoded = ethers.utils.hexlify(ethers.utils.base58.decode(hash));
-      const postHash = delIPFSPrefix(encoded);
-      const response = await contract.stakeAndPost(postHash, {
-        value: ethers.utils.parseEther(stake.toString()),
-      });
-      return response;
+      const { hash } = await ethService.sendStakeAndPostTx(
+        { account, content: values.content, stake: values.stake },
+        library
+      );
+      values.txHash = hash;
+
+      const createAction = await dispatch(createPostRequest(values));
+      const result = unwrapResult(createAction);
+      console.log(result);
+
+      onClose();
     } catch (e) {
-      console.log(e);
+      dispatch(showAlert(e.message));
     }
   };
 

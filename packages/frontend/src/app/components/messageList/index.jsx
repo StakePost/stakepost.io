@@ -6,21 +6,22 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import { MessageCard } from "../messageCard";
 
-import { fetchPosts, postsSelector } from "../../store/slices/posts";
+import { fetchPostsRequest } from "../../store/slices/post";
 
 export function MessageList() {
   const dispatch = useDispatch();
-  const { count, offset, limit, entities } = useSelector(postsSelector);
+  const { count, offset, limit, entities } = useSelector((state) => state.post);
 
   const classes = useStyles();
 
   useEffect(() => {
-    dispatch(fetchPosts(offset, limit));
+    dispatch(fetchPostsRequest({ offset, limit }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchMoreData = () => {
-    dispatch(fetchPosts(offset + limit, limit));
+    const nextOffset = offset + limit;
+    dispatch(fetchPostsRequest({ offset: nextOffset, limit }));
   };
 
   const hasMore = entities.length < count;
