@@ -5,6 +5,9 @@
     "node": "12.x"
   },
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stakepost/stakepost.io.git"
