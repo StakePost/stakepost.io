@@ -23,7 +23,7 @@
     "@web3-react/injected-connector": "^6.0.7",
     "@web3-react/walletconnect-connector": "^6.1.6",
     "ethereum-blockies-base64": "^1.0.2",
-    "ethers": "^5.0.26",
+    "ethers": "^5.0.29",
     "formik": "^2.2.6",
     "formik-material-ui": "^3.0.1",
     "ipfs-only-hash": "^2.0.1",
