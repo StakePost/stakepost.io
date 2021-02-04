@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Stakepost Nest backend API",
-  "license": "MIT",
+  "license": "ISC",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
