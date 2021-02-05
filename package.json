@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/stakepost/stakepost.io/#readme",
   "scripts": {
-    "start": "yarn workspace @stakepost/backend start",
+    "start": "yarn workspace @stakepost/backend start:prod",
     "build": "lerna run --parallel build",
     "start:dev": "lerna run --parallel start:dev"
   },
