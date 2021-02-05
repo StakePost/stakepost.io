@@ -1,7 +1,7 @@
 {
   "name": "@stakepost/frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Stakepost React frontend app",
   "license": "ISC",
   "homepage": "https://www.stakepost.io",
