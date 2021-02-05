@@ -19,9 +19,9 @@
   },
   "homepage": "https://github.com/stakepost/stakepost.io/#readme",
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist",
-    "watch": "lerna run --parallel build:watch",
-    "dev": "lerna run --parallel dev"
+    "start": "yarn workspace @stakepost/backend start",
+    "build": "lerna run --parallel build",
+    "start:dev": "lerna run --parallel start:dev"
   },
   "devDependencies": {
     "lerna": "^3.22.1"
