@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-
-import { PostsModule } from './posts/posts.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
+import { PostsModule } from './posts/posts.module';
 import { CronModule } from './cron/cron.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -12,6 +14,10 @@ import { TwitterModule } from './twitter/twitter.module';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..','..', 'frontend', 'build'),
+      exclude: ['/api*'],
+    }),
     PostsModule,
     ConfigModule.forRoot({
       isGlobal: true,

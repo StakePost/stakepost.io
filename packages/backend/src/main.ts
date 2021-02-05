@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 const PORT = process.env.PORT || 5000;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v1');
 
   const config = new DocumentBuilder()
     .setTitle('Stakepost Post Api')
@@ -13,7 +14,7 @@ async function bootstrap() {
     .addTag('stakepost')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('openapi', app, document);
   app.enableCors();
 
   await app.listen(PORT);

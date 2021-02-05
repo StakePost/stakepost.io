@@ -28,6 +28,7 @@
     "@nestjs/passport": "^7.1.5",
     "@nestjs/platform-express": "^7.6.11",
     "@nestjs/schedule": "^0.4.2",
+    "@nestjs/serve-static": "^2.1.4",
     "@nestjs/swagger": "^4.7.12",
     "@pinata/sdk": "^1.1.11",
     "class-validator": "^0.13.1",
