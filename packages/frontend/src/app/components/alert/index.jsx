@@ -1,13 +1,13 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import Snackbar from "@material-ui/core/Snackbar";
-import IconButton from "@material-ui/core/IconButton";
-import CloseIcon from "@material-ui/icons/Close";
+import Snackbar from '@material-ui/core/Snackbar';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
 
-import { clearAlert } from "../../store/slices/alert";
+import { clearAlert } from '../../store/slices/alert';
 
-export function Alert() {
+const Alert = () => {
   const dispatch = useDispatch();
   const { show, message } = useSelector((state) => state.alert);
 
@@ -17,8 +17,8 @@ export function Alert() {
   return (
     <Snackbar
       anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "left",
+        vertical: 'bottom',
+        horizontal: 'left',
       }}
       open={show}
       autoHideDuration={6000}
@@ -38,4 +38,6 @@ export function Alert() {
       }
     />
   );
-}
+};
+
+export default Alert;

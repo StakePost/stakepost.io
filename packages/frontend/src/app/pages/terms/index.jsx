@@ -1,18 +1,20 @@
-import React from "react";
+import React from 'react';
 
-import Container from "@material-ui/core/Container";
-import { makeStyles } from "@material-ui/core/styles";
+import Container from '@material-ui/core/Container';
+import { makeStyles } from '@material-ui/core/styles';
 
-export function Terms() {
+const Terms = () => {
   const classes = useStyles();
   return (
     <Container maxWidth="lg" className={classes.root}>
       Terms
     </Container>
   );
-}
-const useStyles = makeStyles((theme) => ({
+};
+const useStyles = makeStyles(() => ({
   root: {
-    flex: "1 0 auto",
+    flex: '1 0 auto',
   },
 }));
+
+export default Terms;

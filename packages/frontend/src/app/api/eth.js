@@ -1,16 +1,16 @@
-import { ethers } from "ethers";
-import makeBlockie from "ethereum-blockies-base64";
-import HashGenerator from "ipfs-only-hash";
+import { ethers } from 'ethers';
+import makeBlockie from 'ethereum-blockies-base64';
+import HashGenerator from 'ipfs-only-hash';
 
-import config from "../config";
-import { ApiError, ErrorCodes } from "./index";
-import { HashUtils } from "../../utils";
+import config from '../config';
+import { ApiError, ErrorCodes } from './index';
+import { HashUtils } from '../../utils';
 
 const getUserPost = async ({ account }, provider) => {
   const contract = new ethers.Contract(
     config.StakepostContractAt,
     config.StakepostContractAbi,
-    provider
+    provider,
   );
 
   try {
@@ -27,13 +27,12 @@ const getUserPost = async ({ account }, provider) => {
       }
     }
 
-    return null;
+    return Promise.resolve(null);
   } catch (error) {
     if (error instanceof ApiError) {
       return Promise.reject(error);
-    } else {
-      return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
     }
+    return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
   }
 };
 
@@ -44,18 +43,17 @@ const getUserData = async ({ account }, provider) => {
     const balance = ethers.utils.formatEther(balanceBn).substr(0, 4);
     const post = await getUserPost({ account }, provider);
 
-    return {
+    return Promise.resolve({
       account,
       image,
       balance,
       post,
-    };
+    });
   } catch (error) {
     if (error instanceof ApiError) {
       return Promise.reject(error);
-    } else {
-      return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
     }
+    return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
   }
 };
 
@@ -71,9 +69,8 @@ const getUserSignature = async ({ account, nonce }, provider) => {
   } catch (error) {
     if (error instanceof ApiError) {
       return Promise.reject(error);
-    } else {
-      return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
     }
+    return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
   }
 };
 
@@ -82,27 +79,25 @@ const sendStakeAndPostTx = async ({ account, content, stake }, provider) => {
     const contract = new ethers.Contract(
       config.StakepostContractAt,
       config.StakepostContractAbi,
-      provider.getSigner(account)
+      provider.getSigner(account),
     );
 
     const postContent = JSON.stringify({ content, author: account, stake });
 
     const hash = await HashGenerator.of(Buffer.from(postContent));
 
-    console.log(hash);
     const postHash = HashUtils.toEth(hash);
 
     const response = await contract.stakeAndPost(postHash, {
       value: ethers.utils.parseEther(stake.toString()),
     });
 
-    return response;
+    return Promise.resolve(response);
   } catch (error) {
     if (error instanceof ApiError) {
       return Promise.reject(error);
-    } else {
-      return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
     }
+    return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
   }
 };
 
@@ -111,22 +106,22 @@ const sendExitTx = async ({ account }, provider) => {
     const contract = new ethers.Contract(
       config.StakepostContractAt,
       config.StakepostContractAbi,
-      provider.getSigner(account)
+      provider.getSigner(account),
     );
     await contract.exit();
+    return Promise.resolve(true);
   } catch (e) {
-    const match = e.message.match(/\{.*\:\{.*\:.*\}\}/gi);
+    const match = e.message.match(/\{.*:\{.*:.*\}\}/gi);
 
     if (match) {
       const error = JSON.parse(match[0]);
       return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, error.message));
-    } else {
-      new ApiError(ErrorCodes.BLOCKCHAIN, e.message);
     }
+    return Promise.reject(new ApiError(ErrorCodes.BLOCKCHAIN, e.message));
   }
 };
 
-export const ethService = {
+export default {
   getUserData,
   getUserSignature,
   sendStakeAndPostTx,

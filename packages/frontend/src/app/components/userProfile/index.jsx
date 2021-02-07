@@ -1,30 +1,30 @@
-import React, { useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useWeb3React } from "@web3-react/core";
-import { DateTime } from "luxon";
+import React, { useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useWeb3React } from '@web3-react/core';
+import { DateTime } from 'luxon';
 
-import { makeStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
-import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import Grow from "@material-ui/core/Grow";
-import Paper from "@material-ui/core/Paper";
-import Popper from "@material-ui/core/Popper";
-import MenuItem from "@material-ui/core/MenuItem";
-import MenuList from "@material-ui/core/MenuList";
-import Avatar from "@material-ui/core/Avatar";
-import Divider from "@material-ui/core/Divider";
+import { makeStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Grow from '@material-ui/core/Grow';
+import Paper from '@material-ui/core/Paper';
+import Popper from '@material-ui/core/Popper';
+import MenuItem from '@material-ui/core/MenuItem';
+import MenuList from '@material-ui/core/MenuList';
+import Avatar from '@material-ui/core/Avatar';
+import Divider from '@material-ui/core/Divider';
 
-import { truncateAddress } from "../../../utils";
+import { truncateAddress } from '../../../utils';
 
-import { logoutRequest } from "../../store/slices/auth";
-import { showAlert } from "../../store/slices/alert";
+import { logoutRequest } from '../../store/slices/auth';
+import { showAlert } from '../../store/slices/alert';
 
-import { ethService } from "../../api";
+import ethService from '../../api/eth';
 
-export function UserProfile() {
+const UserProfile = () => {
   const dispatch = useDispatch();
   const { account, image, balance, post } = useSelector((state) => state.eth);
   const { library, deactivate } = useWeb3React();
@@ -34,7 +34,7 @@ export function UserProfile() {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
 
-  const handleLogout = (event) => {
+  const handleLogout = () => {
     deactivate();
     dispatch(logoutRequest());
   };
@@ -50,7 +50,7 @@ export function UserProfile() {
     setOpen(false);
   };
 
-  const handleExit = async (event) => {
+  const handleExit = async () => {
     try {
       await ethService.sendExitTx({ account }, library);
     } catch (e) {
@@ -59,7 +59,7 @@ export function UserProfile() {
   };
 
   const handleMe = () => {
-    //dispatch(meRequest(token, refreshToken));
+    // dispatch(meRequest(token, refreshToken));
   };
 
   return (
@@ -85,8 +85,8 @@ export function UserProfile() {
         <Button
           color="primary"
           size="small"
-          aria-controls={open ? "split-button-menu" : undefined}
-          aria-expanded={open ? "true" : undefined}
+          aria-controls={open ? 'split-button-menu' : undefined}
+          aria-expanded={open ? 'true' : undefined}
           aria-label="select merge strategy"
           aria-haspopup="menu"
           onClick={handleToggle}
@@ -106,7 +106,7 @@ export function UserProfile() {
             {...TransitionProps}
             style={{
               transformOrigin:
-                placement === "bottom" ? "center top" : "center bottom",
+                placement === 'bottom' ? 'center top' : 'center bottom',
             }}
           >
             <Paper>
@@ -114,7 +114,7 @@ export function UserProfile() {
                 <MenuList id="split-button-menu">
                   {post && (
                     <MenuItem key="post" onClick={handleExit}>
-                      {truncateAddress(post.hash)} | {post.stake} ETH |{" "}
+                      {truncateAddress(post.hash)} | {post.stake} ETH |{' '}
                       {DateTime.fromMillis(post.time).toRelative()}
                     </MenuItem>
                   )}
@@ -129,26 +129,26 @@ export function UserProfile() {
       </Popper>
     </Grid>
   );
-}
+};
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    color: "white",
-    width: "fit-content",
-    backgroundColor: "#141414",
-    textTransform: "none",
+    color: 'white',
+    width: 'fit-content',
+    backgroundColor: '#141414',
+    textTransform: 'none',
     fontFamily: "'Roboto Slab', serif",
-    fontWeight: "900",
-    fontSize: "1rem",
-    lineHeight: "1.3125rem",
+    fontWeight: '900',
+    fontSize: '1rem',
+    lineHeight: '1.3125rem',
     borderRadius: 2,
-    display: "flex",
-    "& div": {
+    display: 'flex',
+    '& div': {
       margin: theme.spacing(0.5),
     },
-    "& hr": {
+    '& hr': {
       margin: theme.spacing(0.5),
-      backgroundColor: "#454545",
+      backgroundColor: '#454545',
     },
   },
   avatar: {
@@ -156,3 +156,5 @@ const useStyles = makeStyles((theme) => ({
     height: theme.spacing(4),
   },
 }));
+
+export default UserProfile;

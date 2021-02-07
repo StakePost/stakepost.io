@@ -1,5 +1,5 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { postService } from "../../api";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import postService from '../../api/posts';
 
 const initialState = {
   loading: false,
@@ -13,43 +13,43 @@ const initialState = {
 };
 
 export const createPostRequest = createAsyncThunk(
-  "post/createPost",
+  'post/createPost',
   async (
-    { content, stake, txHash = "0x0" },
-    { getState, requestId, rejectWithValue }
+    { content, stake, txHash = '0x0' },
+    { getState, requestId, rejectWithValue },
   ) => {
     const { currentRequestId, loading } = getState().post;
     if (!loading || requestId !== currentRequestId) {
-      return;
+      return Promise.resolve();
     }
     try {
       const data = await postService.create(content, stake, txHash);
-      return data;
+      return Promise.resolve(data);
     } catch (e) {
       const { code, message } = e;
       return rejectWithValue({ code, message });
     }
-  }
+  },
 );
 export const fetchPostsRequest = createAsyncThunk(
-  "post/fetchPosts",
+  'post/fetchPosts',
   async ({ offset, limit }, { getState, requestId, rejectWithValue }) => {
     const { currentRequestId, loading } = getState().post;
     if (!loading || requestId !== currentRequestId) {
-      return;
+      return Promise.resolve();
     }
     try {
       const data = await postService.list(offset, limit);
-      return data;
+      return Promise.resolve(data);
     } catch (e) {
       const { code, message } = e;
       return rejectWithValue({ code, message });
     }
-  }
+  },
 );
 
 const postSlice = createSlice({
-  name: "post",
+  name: 'post',
   initialState,
   reducers: {
     setLoading: (state, { payload }) => {
@@ -69,7 +69,7 @@ const postSlice = createSlice({
         state.loading = false;
         state.post = action.payload;
         state.entities = [action.payload, ...state.entities];
-        state.count = state.count + 1;
+        state.count += 1;
         state.currentRequestId = undefined;
       }
     },

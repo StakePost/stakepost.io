@@ -1,19 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { useWeb3React } from "@web3-react/core";
-import { makeStyles } from "@material-ui/core/styles";
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { useWeb3React } from '@web3-react/core';
+import { makeStyles } from '@material-ui/core/styles';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import Typography from "@material-ui/core/Typography";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import { StyledButton } from "../styledButton";
-import { useEagerConnect, useInactiveListener } from "../../hooks";
+import StyledButton from '../styledButton';
+import { useEagerConnect, useInactiveListener } from '../../hooks';
 
-export function ProviderCard(props) {
-  const { title, icon, btnTitle, disabled, provider, active } = props;
-  const classes = useStyles(props);
-  const { connector, activate, error } = useWeb3React();
+const ProviderCard = ({
+  title,
+  icon,
+  btnTitle,
+  disabled,
+  provider,
+  active,
+}) => {
+  const classes = useStyles();
+  const { connector, activate } = useWeb3React();
 
   const [activating, setActivating] = useState();
   useEffect(() => {
@@ -53,39 +60,50 @@ export function ProviderCard(props) {
       </CardActions>
     </Card>
   );
-}
+};
 
 const useStyles = makeStyles({
   root: {
     height: 250,
     width: 200,
-    borderColor: (props) => (props.disabled ? "#C2C2C2" : "black"),
-    backgroundColor: (props) => (props.active ? "green" : "transparent"),
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "center",
+    borderColor: (disabled) => (disabled ? '#C2C2C2' : 'black'),
+    backgroundColor: (active) => (active ? 'green' : 'transparent'),
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   content: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    textAlign: "center",
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
   },
   title: {
-    fontSize: "1.25rem",
+    fontSize: '1.25rem',
     fontWeight: 700,
-    color: "black",
-    textTransform: "uppercase",
+    color: 'black',
+    textTransform: 'uppercase',
   },
   wrapper: {
-    position: "relative",
+    position: 'relative',
   },
   buttonProgress: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
     marginTop: -12,
     marginLeft: -12,
   },
 });
+
+ProviderCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  icon: PropTypes.string.isRequired,
+  btnTitle: PropTypes.string.isRequired,
+  disabled: PropTypes.bool.isRequired,
+  provider: PropTypes.func.isRequired,
+  active: PropTypes.bool.isRequired,
+};
+
+export default ProviderCard;

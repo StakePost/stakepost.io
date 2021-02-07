@@ -1,15 +1,16 @@
-import React from "react";
-import { useWeb3React } from "@web3-react/core";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { useWeb3React } from '@web3-react/core';
 
-import { withStyles } from "@material-ui/core/styles";
-import Dialog from "@material-ui/core/Dialog";
-import Button from "@material-ui/core/Button";
-import MuiDialogTitle from "@material-ui/core/DialogTitle";
-import MuiDialogContent from "@material-ui/core/DialogContent";
-import MuiDialogActions from "@material-ui/core/DialogActions";
-import IconButton from "@material-ui/core/IconButton";
-import CloseIcon from "@material-ui/icons/Close";
-import Typography from "@material-ui/core/Typography";
+import { withStyles } from '@material-ui/core/styles';
+import Dialog from '@material-ui/core/Dialog';
+import Button from '@material-ui/core/Button';
+import MuiDialogTitle from '@material-ui/core/DialogTitle';
+import MuiDialogContent from '@material-ui/core/DialogContent';
+import MuiDialogActions from '@material-ui/core/DialogActions';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
+import Typography from '@material-ui/core/Typography';
 
 const styles = (theme) => ({
   root: {
@@ -18,7 +19,7 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.white,
   },
   closeButton: {
-    position: "absolute",
+    position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
@@ -56,8 +57,7 @@ const DialogActions = withStyles((theme) => ({
   },
 }))(MuiDialogActions);
 
-export function StyledModal(props) {
-  const { open, onClose, title, children, showActions } = props;
+const StyledModal = ({ open, onClose, title, showActions, children }) => {
   const { deactivate, active } = useWeb3React();
   const handleClose = () => {
     onClose();
@@ -89,4 +89,14 @@ export function StyledModal(props) {
       )}
     </Dialog>
   );
-}
+};
+
+StyledModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  showActions: PropTypes.bool.isRequired,
+  children: PropTypes.element.isRequired,
+};
+
+export default StyledModal;

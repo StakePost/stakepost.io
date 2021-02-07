@@ -1,50 +1,50 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import { useWeb3React } from "@web3-react/core";
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { useWeb3React } from '@web3-react/core';
 
 import {
   createMuiTheme,
   makeStyles,
   ThemeProvider,
-} from "@material-ui/core/styles";
+} from '@material-ui/core/styles';
 
-import CssBaseline from "@material-ui/core/CssBaseline";
+import CssBaseline from '@material-ui/core/CssBaseline';
 
-import { useEagerConnect, useInactiveListener } from "./hooks";
+import { useEagerConnect, useInactiveListener } from './hooks';
 
-import { Header } from "./components/header";
-import { Footer } from "./components/footer";
-import { Index } from "./pages/index";
-import { About } from "./pages/about";
-import { Terms } from "./pages/terms";
+import Header from './components/header';
+import Footer from './components/footer';
+import Index from './pages/index';
+import About from './pages/about';
+import Terms from './pages/terms';
 
-import { getAccountDataRequest } from "./store/slices/eth";
-import { statusRequest } from "./store/slices/auth";
+import { getAccountDataRequest } from './store/slices/eth';
+import { statusRequest } from './store/slices/auth';
 
-import { Alert } from "./components/alert";
+import Alert from './components/alert';
 
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: "#141414",
+      main: '#141414',
     },
   },
   typography: {
     fontFamily: [
-      "Inter",
-      "Roboto",
+      'Inter',
+      'Roboto',
       '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
+      'Arial',
+      'sans-serif',
       '"Apple Color Emoji"',
       '"Segoe UI Emoji"',
       '"Segoe UI Symbol"',
-    ].join(","),
+    ].join(','),
   },
 });
 
-function App() {
+const App = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
 
@@ -83,15 +83,15 @@ function App() {
       </ThemeProvider>
     </Router>
   );
-}
+};
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
-    display: "flex",
-    minHeight: "100vh",
-    flexDirection: "column",
+    display: 'flex',
+    minHeight: '100vh',
+    flexDirection: 'column',
     fontFamily: '"Inter", sans-serif;',
-    fontSize: "1rem",
+    fontSize: '1rem',
   },
 }));
 

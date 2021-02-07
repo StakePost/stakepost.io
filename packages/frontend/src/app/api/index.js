@@ -1,7 +1,3 @@
-export * from "./users";
-export * from "./posts";
-export * from "./eth";
-
 export const ErrorCodes = {
   Unauthorized: 401,
   NOTFOUND: 404,
@@ -11,8 +7,6 @@ export const ErrorCodes = {
 };
 
 export class ApiError {
-  code;
-  message;
   constructor(code, message) {
     this.code = code;
     this.message = message;

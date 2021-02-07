@@ -1,12 +1,12 @@
-import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import React from 'react';
+import { makeStyles } from '@material-ui/core/styles';
 
-import Container from "@material-ui/core/Container";
-import Grid from "@material-ui/core/Grid";
-import { MessageFormWrapper } from "../../components/messageForm/wrapper";
-import { MessageList } from "../../components/messageList";
+import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import MessageFormWrapper from '../../components/messageForm/wrapper';
+import MessageList from '../../components/messageList';
 
-export function Index() {
+const Index = () => {
   const classes = useStyles();
   return (
     <Container maxWidth="lg" className={classes.root}>
@@ -20,12 +20,14 @@ export function Index() {
       </Grid>
     </Container>
   );
-}
-const useStyles = makeStyles((theme) => ({
+};
+const useStyles = makeStyles(() => ({
   root: {
-    flex: "1 0 auto",
+    flex: '1 0 auto',
   },
   fullWidth: {
-    width: "100%",
+    width: '100%',
   },
 }));
+
+export default Index;

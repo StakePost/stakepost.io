@@ -1,25 +1,25 @@
-import React from "react";
-import { useSelector } from "react-redux";
-import { Link as RouterLink } from "react-router-dom";
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Link as RouterLink } from 'react-router-dom';
 
-import { makeStyles } from "@material-ui/core/styles";
-import Container from "@material-ui/core/Container";
-import Link from "@material-ui/core/Link";
-import AppBar from "@material-ui/core/AppBar";
-import Box from "@material-ui/core/Box";
-import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
-import TwitterIcon from "@material-ui/icons/Twitter";
-import TelegramIcon from "@material-ui/icons/Telegram";
-import GithubIcon from "@material-ui/icons/GitHub";
+import { makeStyles } from '@material-ui/core/styles';
+import Container from '@material-ui/core/Container';
+import Link from '@material-ui/core/Link';
+import AppBar from '@material-ui/core/AppBar';
+import Box from '@material-ui/core/Box';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import TwitterIcon from '@material-ui/icons/Twitter';
+import TelegramIcon from '@material-ui/icons/Telegram';
+import GithubIcon from '@material-ui/icons/GitHub';
 
-import { UnlockButton } from "../unlockButton";
-import { UserProfile } from "../userProfile";
+import UnlockButton from '../unlockButton';
+import UserProfile from '../userProfile';
 
 const LinkBehavior = React.forwardRef((props, ref) => (
   <RouterLink ref={ref} {...props} />
 ));
-export function Header() {
+const Header = () => {
   const classes = useStyles();
   const { authorized } = useSelector((state) => state.auth);
 
@@ -47,24 +47,24 @@ export function Header() {
       </AppBar>
     </Container>
   );
-}
+};
 
 const useStyles = makeStyles((theme) => ({
   noGutters: {
-    paddingLeft: "0",
-    paddingRight: "0",
+    paddingLeft: '0',
+    paddingRight: '0',
   },
   logo: {
     fontFamily: "'Roboto Slab', serif",
-    fontWeight: "900",
-    fontSize: "1.5rem",
-    lineHeight: "2rem",
+    fontWeight: '900',
+    fontSize: '1.5rem',
+    lineHeight: '2rem',
   },
   logoLink: {
-    color: "black",
-    textDecoration: "none",
-    "&:hover": {
-      textDecoration: "none",
+    color: 'black',
+    textDecoration: 'none',
+    '&:hover': {
+      textDecoration: 'none',
     },
   },
   iconBox: {
@@ -72,6 +72,8 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   headerIcon: {
-    color: "#464545",
+    color: '#464545',
   },
 }));
+
+export default Header;

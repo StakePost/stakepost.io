@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import { StyledButton } from "../styledButton";
-import { UnlockModal } from "../unlockModal";
+import React, { useState } from 'react';
+import StyledButton from '../styledButton';
+import UnlockModal from '../unlockModal';
 
-export function UnlockButton() {
+const UnlockButton = () => {
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
   };
 
-  const handleClose = (value) => {
+  const handleClose = () => {
     setOpen(false);
   };
 
@@ -19,4 +19,6 @@ export function UnlockButton() {
       <UnlockModal open={open} onClose={handleClose} />
     </>
   );
-}
+};
+
+export default UnlockButton;

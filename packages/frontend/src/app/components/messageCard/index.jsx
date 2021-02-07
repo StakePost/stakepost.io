@@ -1,18 +1,20 @@
-import React from "react";
-import { DateTime } from "luxon";
-import config from "../../config";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { DateTime } from 'luxon';
 
-import { makeStyles } from "@material-ui/core/styles";
-import Card from "@material-ui/core/Card";
-import CardHeader from "@material-ui/core/CardHeader";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import IconButton from "@material-ui/core/IconButton";
-import StarIcon from "@material-ui/icons/Star";
-import TwitterIcon from "@material-ui/icons/Twitter";
-import ShareIcon from "@material-ui/icons/Share";
+import { makeStyles } from '@material-ui/core/styles';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import IconButton from '@material-ui/core/IconButton';
+import StarIcon from '@material-ui/icons/Star';
+import TwitterIcon from '@material-ui/icons/Twitter';
+import ShareIcon from '@material-ui/icons/Share';
 
-export function MessageCard({ pinned, hash, stake, createdAt, children }) {
+import config from '../../config';
+
+const MessageCard = ({ pinned, hash, stake, createdAt, children }) => {
   const classes = useStyles(pinned);
   return (
     <Card className={classes.root} raised elevation={3} square>
@@ -25,7 +27,7 @@ export function MessageCard({ pinned, hash, stake, createdAt, children }) {
           )
         }
         disableTypography
-        title={Number(stake).toFixed(2) + " ETH"}
+        title={`${Number(stake).toFixed(2)} ETH`}
         className={classes.header}
       />
       <CardContent className={classes.content}>{children}</CardContent>
@@ -46,30 +48,41 @@ export function MessageCard({ pinned, hash, stake, createdAt, children }) {
       </CardActions>
     </Card>
   );
-}
+};
+
 const useStyles = makeStyles({
   root: {
     minWidth: 275,
-    borderRadius: "0.125rem",
-    marginBottom: (pinned) => (pinned ? "4rem" : "2rem"),
+    borderRadius: '0.125rem',
+    marginBottom: (pinned) => (pinned ? '4rem' : '2rem'),
   },
   header: {
     fontFamily: '"Inter", sans-serif',
-    fontSize: "1.125rem",
-    fontWeight: "bold",
+    fontSize: '1.125rem',
+    fontWeight: 'bold',
   },
   content: {
-    padding: "0.5rem 1rem",
-    fontSize: "1.25rem",
+    padding: '0.5rem 1rem',
+    fontSize: '1.25rem',
   },
   actions: {
-    padding: "0.5rem 1rem",
+    padding: '0.5rem 1rem',
   },
   datetime: {
-    marginRight: "auto",
-    color: "#848484",
+    marginRight: 'auto',
+    color: '#848484',
   },
   actionIcon: {
-    marginLeft: "auto",
+    marginLeft: 'auto',
   },
 });
+
+MessageCard.propTypes = {
+  pinned: PropTypes.bool.isRequired,
+  hash: PropTypes.string.isRequired,
+  stake: PropTypes.string.isRequired,
+  createdAt: PropTypes.string.isRequired,
+  children: PropTypes.element.isRequired,
+};
+
+export default MessageCard;

@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
-import TextField from "@material-ui/core/TextField";
-import { MessageFormModal } from "./modal";
+import { makeStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
+import MessageFormModal from './modal';
 
-export function MessageFormWrapper() {
+const MessageFormWrapper = () => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
 
@@ -13,7 +13,7 @@ export function MessageFormWrapper() {
     setOpen(true);
   };
 
-  const handleClose = (value) => {
+  const handleClose = () => {
     setOpen(false);
   };
 
@@ -36,20 +36,22 @@ export function MessageFormWrapper() {
       <MessageFormModal open={open} onClose={handleClose} />
     </>
   );
-}
-const useStyles = makeStyles((theme) => ({
+};
+const useStyles = makeStyles(() => ({
   title: {
-    margin: "2rem 0 1rem 0",
-    fontSize: "1.5rem",
-    fontWeight: "700",
-    fontStyle: "italic",
+    margin: '2rem 0 1rem 0',
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    fontStyle: 'italic',
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif;',
   },
   paper: {
-    borderRadius: "0.125rem",
-    margin: "2rem 0",
+    borderRadius: '0.125rem',
+    margin: '2rem 0',
   },
   wrapper: {
-    padding: "0.5rem",
+    padding: '0.5rem',
   },
 }));
+
+export default MessageFormWrapper;

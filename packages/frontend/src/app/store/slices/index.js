@@ -1,9 +1,9 @@
-import { combineReducers } from "redux";
+import { combineReducers } from 'redux';
 
-import alertReducer from "./alert";
-import authReducer from "./auth";
-import ethReducer from "./eth";
-import postReducer from "./post";
+import alertReducer from './alert';
+import authReducer from './auth';
+import ethReducer from './eth';
+import postReducer from './post';
 
 const rootReducer = combineReducers({
   alert: alertReducer,

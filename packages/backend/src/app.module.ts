@@ -15,7 +15,7 @@ import { TwitterModule } from './twitter/twitter.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..','..', 'frontend', 'build'),
+      rootPath: join(__dirname, '..', '..', 'frontend', 'build'),
       exclude: ['/api*'],
     }),
     PostsModule,

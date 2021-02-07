@@ -1,6 +1,8 @@
-import { createAsyncThunk, createSlice, unwrapResult } from "@reduxjs/toolkit";
-import { ErrorCodes, userService, ethService, ApiError } from "../../api";
-import { AuthStore } from "../../../utils";
+import { createAsyncThunk, createSlice, unwrapResult } from '@reduxjs/toolkit';
+import { ErrorCodes, ApiError } from '../../api';
+import { AuthStore } from '../../../utils';
+import userService from '../../api/users';
+import ethService from '../../api/eth';
 
 const initialState = {
   loading: false,
@@ -21,12 +23,12 @@ const initialState = {
 4) login request, save token and refresh token to state and store
 */
 export const loginRequest = createAsyncThunk(
-  "auth/loginRequest",
+  'auth/loginRequest',
   async ({ account, provider }, { getState, rejectWithValue }) => {
     const { loading } = getState().auth;
 
     if (!loading) {
-      return;
+      return Promise.resolve();
     }
 
     let nonce = null;
@@ -40,7 +42,9 @@ export const loginRequest = createAsyncThunk(
           await userService.register(account);
           const nonceResponse = await userService.nonce(account);
           nonce = nonceResponse.nonce;
-        } catch (e) {}
+        } catch (ignored) {
+          // Just ignore the error
+        }
       } else {
         const { code, message } = e;
         return rejectWithValue({ code, message });
@@ -51,13 +55,13 @@ export const loginRequest = createAsyncThunk(
       if (nonce === null) {
         throw new ApiError(
           ErrorCodes.UNSPECIFIED,
-          "Failed to load nonce for the user"
+          'Failed to load nonce for the user',
         );
       }
 
       const { signature } = await ethService.getUserSignature(
         { account, nonce },
-        provider
+        provider,
       );
 
       const loginResponse = await userService.login(account, signature);
@@ -69,35 +73,36 @@ export const loginRequest = createAsyncThunk(
         refresh: loginResponse.data.payload.refresh_token,
       });
 
-      return {
+      return Promise.resolve({
         account,
         nonce,
         token: loginResponse.data.payload.token,
         refresh: loginResponse.data.payload.refresh_token,
-      };
+      });
     } catch (e) {
       const { code, message } = e;
       return rejectWithValue({ code, message });
     }
-  }
+  },
 );
 
 export const logoutRequest = createAsyncThunk(
-  "auth/logoutRequest",
+  'auth/logoutRequest',
   async (_empty, { getState, rejectWithValue }) => {
     const { loading } = getState().auth;
 
     if (!loading) {
-      return;
+      return Promise.resolve();
     }
 
     try {
       AuthStore.remove();
+      return Promise.resolve();
     } catch (e) {
       const { code, message } = e;
       return rejectWithValue({ code, message });
     }
-  }
+  },
 );
 
 /*
@@ -107,13 +112,13 @@ export const logoutRequest = createAsyncThunk(
 3) if not found, dispatch Login Workflow
 */
 export const statusRequest = createAsyncThunk(
-  "auth/statusRequest",
+  'auth/statusRequest',
   async ({ account, provider }, { getState, rejectWithValue, dispatch }) => {
     const { loading } = getState().auth;
     let { authorized } = getState().auth;
 
     if (!loading) {
-      return;
+      return Promise.resolve();
     }
 
     try {
@@ -132,7 +137,7 @@ export const statusRequest = createAsyncThunk(
               nonce: storeNonce,
               token: storeToken,
               refresh: storeRefresh,
-            })
+            }),
           );
           unwrapResult(result);
         } else {
@@ -141,33 +146,33 @@ export const statusRequest = createAsyncThunk(
         }
         authorized = true;
       }
-      return { authorized };
+      return Promise.resolve({ authorized });
     } catch (e) {
       const { code, message } = e;
       return rejectWithValue({ code, message });
     }
-  }
+  },
 );
 
 export const refreshRequest = createAsyncThunk(
-  "auth/refreshRequest",
+  'auth/refreshRequest',
   async (_empty, { getState, rejectWithValue }) => {
     const { loading, data } = getState().auth;
     if (!loading) {
-      return;
+      return Promise.resolve();
     }
     try {
       const response = await userService.refresh(data.refresh);
-      return response.data.payload.token;
+      return Promise.resolve(response.data.payload.token);
     } catch (e) {
       const { code, message } = e;
       return rejectWithValue({ code, message });
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
     authRestore: (state, { payload }) => {
@@ -176,7 +181,7 @@ const authSlice = createSlice({
   },
   extraReducers: {
     // status action
-    [statusRequest.pending]: (state, action) => {
+    [statusRequest.pending]: (state) => {
       if (!state.loading) {
         state.loading = true;
       }
@@ -191,7 +196,7 @@ const authSlice = createSlice({
     },
 
     // login action
-    [loginRequest.pending]: (state, action) => {
+    [loginRequest.pending]: (state) => {
       if (!state.loading) {
         state.loading = true;
       }
@@ -206,12 +211,12 @@ const authSlice = createSlice({
     },
 
     // logout action
-    [logoutRequest.pending]: (state, action) => {
+    [logoutRequest.pending]: (state) => {
       if (!state.loading) {
         state.loading = true;
       }
     },
-    [logoutRequest.fulfilled]: (state, action) => {
+    [logoutRequest.fulfilled]: (state) => {
       state.loading = false;
       state.authorized = false;
       state.data = initialState.data;
@@ -222,7 +227,7 @@ const authSlice = createSlice({
     },
 
     // refresh action
-    [refreshRequest.pending]: (state, action) => {
+    [refreshRequest.pending]: (state) => {
       if (!state.loading) {
         state.loading = true;
       }

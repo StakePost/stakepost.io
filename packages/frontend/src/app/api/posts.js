@@ -1,11 +1,11 @@
-import config from "../config";
-import { authHeader } from "../../utils";
-import { ApiError, ErrorCodes } from "./index";
+import config from '../config';
+import { authHeader } from '../../utils';
+import { ApiError, ErrorCodes } from './index';
 
 const list = async (offset, limit) => {
   const requestOptions = {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
   };
   const params = new URLSearchParams({
     offset,
@@ -14,7 +14,7 @@ const list = async (offset, limit) => {
   try {
     const response = await fetch(
       `${config.BackendBaseUri}/posts?${params}`,
-      requestOptions
+      requestOptions,
     );
 
     if (!response.ok) {
@@ -25,25 +25,22 @@ const list = async (offset, limit) => {
   } catch (error) {
     if (error instanceof ApiError) {
       return Promise.reject(error);
-    } else {
-      return Promise.reject(
-        new ApiError(ErrorCodes.UNSPECIFIED, error.message)
-      );
     }
+    return Promise.reject(new ApiError(ErrorCodes.UNSPECIFIED, error.message));
   }
 };
 
 const create = async (content, stake, txHash) => {
   const requestOptions = {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify({ content, stake, txHash }),
   };
 
   try {
     const response = await fetch(
       `${config.BackendBaseUri}/posts`,
-      requestOptions
+      requestOptions,
     );
 
     if (!response.ok) {
@@ -54,14 +51,11 @@ const create = async (content, stake, txHash) => {
   } catch (error) {
     if (error instanceof ApiError) {
       return Promise.reject(error);
-    } else {
-      return Promise.reject(
-        new ApiError(ErrorCodes.UNSPECIFIED, error.message)
-      );
     }
+    return Promise.reject(new ApiError(ErrorCodes.UNSPECIFIED, error.message));
   }
 };
-export const postService = {
+export default {
   list,
   create,
 };

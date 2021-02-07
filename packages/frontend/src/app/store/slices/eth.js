@@ -1,25 +1,25 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { ethService } from "../../api";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import ethService from '../../api/eth';
 
 export const getAccountDataRequest = createAsyncThunk(
-  "eth/getAccountData",
+  'eth/getAccountData',
   async ({ account, library }, { getState, requestId, rejectWithValue }) => {
     const { currentRequestId, loading } = getState().eth;
     if (!loading || requestId !== currentRequestId) {
-      return;
+      return Promise.resolve();
     }
     try {
       const data = await ethService.getUserData({ account }, library);
-      return data;
+      return Promise.resolve(data);
     } catch (e) {
       const { code, message } = e;
       return rejectWithValue({ code, message });
     }
-  }
+  },
 );
 
 const ethSlice = createSlice({
-  name: "eth",
+  name: 'eth',
   initialState: {
     loading: false,
     currentRequestId: undefined,

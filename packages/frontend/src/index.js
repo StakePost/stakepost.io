@@ -1,12 +1,12 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import "./index.css";
-import App from "./app/App";
-import store from "./app/store";
-import { Provider } from "react-redux";
-import { ethers } from "ethers";
-import { Web3ReactProvider } from "@web3-react/core";
-import * as serviceWorker from "./serviceWorker";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import { Provider } from 'react-redux';
+import { ethers } from 'ethers';
+import { Web3ReactProvider } from '@web3-react/core';
+import store from './app/store';
+import App from './app/App';
+import * as serviceWorker from './serviceWorker';
 
 function getLibrary(provider) {
   const library = new ethers.providers.Web3Provider(provider);
@@ -15,14 +15,14 @@ function getLibrary(provider) {
 }
 
 ReactDOM.render(
-  //<React.StrictMode>
+  // <React.StrictMode>
   <Provider store={store}>
     <Web3ReactProvider getLibrary={getLibrary}>
       <App />
     </Web3ReactProvider>
   </Provider>,
-  //</React.StrictMode>,
-  document.getElementById("root")
+  // </React.StrictMode>,
+  document.getElementById('root'),
 );
 
 // If you want your app to work offline and load faster, you can change
